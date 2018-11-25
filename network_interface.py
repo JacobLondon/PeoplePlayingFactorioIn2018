@@ -18,8 +18,10 @@ class Connection():
     def __init__(self, connection):
         self.conn = connection
 
-    def update(self, gamestate):
+    def send_update(self, gamestate):
         self.conn.send(gamestate)
+
+    def get_update(self):
         return self.conn.recv(4096)
 
     def close(self):
