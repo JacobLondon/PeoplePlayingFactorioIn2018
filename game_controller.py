@@ -1,6 +1,6 @@
 import pygame, numpy as np, time, threading
-from player import Player
-from network_interface import Connection
+from sprite import Player, Missile
+from network_interface import Connection, Type
 from gamestate import State
 from enum import Enum
 
@@ -33,12 +33,23 @@ class Controller(object):
         self.ticking = True
         self.done = False
 
+        self.connection = connection
+
         # load players and fix p1 offset
         self.p1 = p1
         self.p1.loc = (self.p1.loc[0], self.p1.loc[1] - 1)
         self.p2 = p2
+        # the player changes depending on client or server
+        self.player = self.p1 if self.connection.type == Type.SERVER else self.p2
+
         self.missiles = []
+        # hold the missiles until tick, then empty the buffer
+        self.missile_buffer = []
+        # object which stores the data for the state
         self.gamestate = State(self.p1, self.p2, self.missiles)
+        # the serialized data for state transmission
+        self.serialized_state = self.gamestate.get_state()
+        # control the speed of the player shooting
         self.cooldown = cooldown
         self.fire_ready = True
 
@@ -71,14 +82,18 @@ class Controller(object):
             self.draw_player(m)
 
     def move(self, direction, player):
+
+        # move left and bounds check
         if direction == Dir.LEFT:
             if 0 <= player.loc[0] - 1:
                 self.draw_tile(player.loc[0], player.loc[1], self.BLACK)
                 player.loc = (player.loc[0] - 1, player.loc[1])
+
+        # move right and bounds check
         elif direction == Dir.RIGHT:
             if player.loc[0] + 1 < self.size / self.square:
                 self.draw_tile(player.loc[0], player.loc[1], self.BLACK)
-                self.p1.loc = (player.loc[0] + 1, player.loc[1])
+                self.player.loc = (player.loc[0] + 1, player.loc[1])
 
     def reload(self):
         time.sleep(self.cooldown)
@@ -88,9 +103,10 @@ class Controller(object):
 
         # make a missile player and put it in the missile list
         if self.fire_ready:
-            missile = Player(number=3, gsize=self.size/self.square, dir=-1)
-            missile.loc = (self.p1.loc[0], self.p1.loc[1] + missile.dir)
+            missile = Missile(dir=-1)
+            missile.loc = (self.player.loc[0], self.player.loc[1] + missile.dir)
             self.missiles.append(missile)
+            self.missile_buffer.append(missile)
 
             # cannot fire again until the cooldown timer is done
             self.fire_ready = False
@@ -98,27 +114,24 @@ class Controller(object):
             t.start()
 
     def create_gamestate(self):
-        self.gamestate.state = self.gamestate.create_gamestate()
+        self.serialized_state = self.gamestate.get_state()
 
     def tick(self):
         while self.ticking:
             c = threading.Thread(target=self.create_gamestate, args=())
             c.start()
             time.sleep(1 / self.tick_rate)
-            c.join()
 
     def update(self):
 
         # update players
         t = threading.Thread(target=self.draw_missiles, args=())
         t.start()
-        self.draw_player(self.p1)
+        self.draw_player(self.player)
         self.draw_player(self.p2)
 
         # set gamestate
-        self.gamestate.p1 = self.p1
-        self.gamestate.p2 = self.p2
-        self.gamestate.missiles = self.missiles
+        self.gamestate.set_state(self.player, self.p2, self.missile_buffer)
 
         #print(threading.active_count())
 
@@ -142,13 +155,13 @@ class Controller(object):
 
                 #  player moves left
                 if pygame.key.get_pressed()[pygame.K_LEFT] != 0:
-                    t = threading.Thread(target=self.move, args=(Dir.LEFT, self.p1))
+                    t = threading.Thread(target=self.move, args=(Dir.LEFT, self.player))
                     t.start()
                     break
 
                 #  player moves right
                 elif pygame.key.get_pressed()[pygame.K_RIGHT] != 0:
-                    t = threading.Thread(target=self.move, args=(Dir.RIGHT, self.p1))
+                    t = threading.Thread(target=self.move, args=(Dir.RIGHT, self.player))
                     t.start()
                     break
 
@@ -163,4 +176,5 @@ class Controller(object):
 
         self.ticking = False
         tick_thread.join()
+        self.connection.close()
         pygame.quit()
