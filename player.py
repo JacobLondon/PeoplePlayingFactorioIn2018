@@ -21,3 +21,5 @@ class Player(object):
             self.color = (0,255,0)
 
         self.dir = dir
+
+    #def save(self):
