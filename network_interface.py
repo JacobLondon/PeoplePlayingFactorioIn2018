@@ -8,7 +8,7 @@ class Type(Enum):
 class Connection():
 
     @staticmethod
-    def create_server(addr=socket.gethostname(), port=5678):
+    def create_server(addr="", port=5678):
         conn = socket.socket()
         conn.bind((addr, port))
         conn.listen()

@@ -37,7 +37,6 @@ class Controller(object):
 
         # load players and fix p1 offset
         self.p1 = p1
-        self.p1.loc = (self.p1.loc[0], self.p1.loc[1] - 1)
         self.p2 = p2
         # the player changes depending on client or server
         self.player = self.p1 if self.connection.type == Type.SERVER else self.p2
@@ -99,11 +98,11 @@ class Controller(object):
         time.sleep(self.cooldown)
         self.fire_ready = True
 
-    def shoot(self):
+    def shoot(self, dir):
 
         # make a missile player and put it in the missile list
         if self.fire_ready:
-            missile = Missile(dir=-1)
+            missile = Missile(dir=dir)
             missile.loc = (self.player.loc[0], self.player.loc[1] + missile.dir)
             self.missiles.append(missile)
             self.missile_buffer.append(missile)
@@ -113,14 +112,47 @@ class Controller(object):
             t = threading.Thread(target=self.reload, args=())
             t.start()
 
-    def create_gamestate(self):
-        self.serialized_state = self.gamestate.get_state()
-
     def tick(self):
         while self.ticking:
-            c = threading.Thread(target=self.create_gamestate, args=())
-            c.start()
+
+            # interface with network every tick
+            network_thread = threading.Thread(target=self.network, args=())
+            network_thread.start()
             time.sleep(1 / self.tick_rate)
+
+    def network(self):
+
+        self.serialized_state = self.gamestate.get_state()
+        # empty the buffer because it will have been sent
+        self.missile_buffer = []
+
+        # server
+        if self.connection.type == Type.SERVER:
+
+            # turn the json into binary
+            self.serialized_state = State.dict_to_binary(self.serialized_state)
+
+            # send the binary data
+            self.connection.send_update(self.serialized_state)
+
+        # client
+        else:
+
+            # receive the binary data
+            self.serialized_state = self.connection.get_update()
+
+            # convert the binary data to json
+            self.serialized_state = State.binary_to_dict(self.serialized_state)
+
+            # convert json to object
+            self.gamestate = State.json2obj(self.serialized_state)
+
+            # set game properties that were received
+            p1.loc = self.gamestate.p1_loc
+
+            for m in self.gamestate.missile_buffer:
+                self.missiles.append(m)
+
 
     def update(self):
 
@@ -165,9 +197,15 @@ class Controller(object):
                     t.start()
                     break
 
-                # player shoots
+                # player shoots up
                 elif pygame.key.get_pressed()[pygame.K_UP] != 0:
-                    t = threading.Thread(target=self.shoot, args=())
+                    t = threading.Thread(target=self.shoot, args=(-1,))
+                    t.start()
+                    break
+
+                # player shoots down
+                elif pygame.key.get_pressed()[pygame.K_DOWN] != 0:
+                    t = threading.Thread(target=self.shoot, args=(1,))
                     t.start()
                     break
 

@@ -15,7 +15,7 @@ class Player(Sprite):
         # player 1
         self.number = number
         if self.number == 0:
-            self.loc = (gsize / 2, gsize)
+            self.loc = (gsize / 2, gsize - 1)
 
         # player 2
         elif self.number == 1:
@@ -27,5 +27,5 @@ class Missile(Sprite):
     def __init__(self, color=(0,255,0), dir=1):
 
         Sprite.__init__(self, color=color)
-        
+
         self.dir = dir
