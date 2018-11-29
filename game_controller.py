@@ -1,7 +1,8 @@
 import pygame, numpy as np, time, threading
 from sprite import Player, Missile
 from network_interface import Connection, Type
-from gamestate import State
+from gamestate import State, json2obj
+from socket import AF_INET, socket, SOCK_STREAM
 from enum import Enum
 
 class Dir(Enum):
@@ -14,7 +15,7 @@ class Controller(object):
     @param square: size of each tile in pixels
     @param size: number of squares wide the screen is
     """
-    def __init__(self, square, size, p1, p2, connection, cooldown):
+    def __init__(self, square, size, p1, p2, client_num, cooldown):
 
         self.square = square
         self.size = square * size
@@ -33,13 +34,17 @@ class Controller(object):
         self.ticking = True
         self.done = False
 
-        self.connection = connection
+        self.client_num = client_num
 
-        # load players and fix p1 offset
+        ADDR = ('127.0.0.1', 5678) # Address according to host IP and port
+        self.client_socket = socket(AF_INET, SOCK_STREAM) # Create socket using Python sockets
+        self.client_socket.connect(ADDR) # Connect socket using host and port
+
+        # load players
         self.p1 = p1
         self.p2 = p2
         # the player changes depending on client or server
-        self.player = self.p1 if self.connection.type == Type.SERVER else self.p2
+        self.player = self.p1 if self.client_num == 0 else self.p2
 
         self.missiles = []
         # hold the missiles until tick, then empty the buffer
@@ -116,43 +121,43 @@ class Controller(object):
         while self.ticking:
 
             # interface with network every tick
-            network_thread = threading.Thread(target=self.network, args=())
-            network_thread.start()
+            s_thread = threading.Thread(target=self.send, args=())
+            s_thread.start()
+            r_thread = threading.Thread(target=self.receive, args=())
+            r_thread.start()
             time.sleep(1 / self.tick_rate)
 
-    def network(self):
+    def send(self):
 
+        # get json string from binary
         self.serialized_state = self.gamestate.get_state()
+
+        # send gamestate
+        self.client_socket.send(bytes(self.serialized_state, "utf8"))
+
         # empty the buffer because it will have been sent
         self.missile_buffer = []
 
-        # server
-        if self.connection.type == Type.SERVER:
+    def receive(self):
+        #try:
+        received_data = self.client_socket.recv(4096).decode("utf8")
+        print(received_data)
+        # convert json to object
+        temp_gamestate = json2obj(received_data)
 
-            # turn the json into binary
-            self.serialized_state = State.dict_to_binary(self.serialized_state)
+        # load the new missiles
+        for m in temp_gamestate.missile_buffer:
+            self.missiles.append(m)
 
-            # send the binary data
-            self.connection.send_update(self.serialized_state)
-
-        # client
+        # set pos of the other player
+        if self.player.number == 0:
+            self.p2.loc = temp_gamestate.p2_loc
         else:
+            self.p1.loc = temp_gamestate.p1_loc
 
-            # receive the binary data
-            self.serialized_state = self.connection.get_update()
-
-            # convert the binary data to json
-            self.serialized_state = State.binary_to_dict(self.serialized_state)
-
-            # convert json to object
-            self.gamestate = State.json2obj(self.serialized_state)
-
-            # set game properties that were received
-            p1.loc = self.gamestate.p1_loc
-
-            for m in self.gamestate.missile_buffer:
-                self.missiles.append(m)
-
+        # client may have exited
+        #except OSError:
+        #    return
 
     def update(self):
 
@@ -180,39 +185,37 @@ class Controller(object):
 
             # traverse all events occurring that frame
             for event in pygame.event.get():
-
-                # top right corner X
-                if event.type == pygame.QUIT:
-                    self.done = True
-
-                #  player moves left
-                if pygame.key.get_pressed()[pygame.K_LEFT] != 0:
-                    t = threading.Thread(target=self.move, args=(Dir.LEFT, self.player))
-                    t.start()
-                    break
-
-                #  player moves right
-                elif pygame.key.get_pressed()[pygame.K_RIGHT] != 0:
-                    t = threading.Thread(target=self.move, args=(Dir.RIGHT, self.player))
-                    t.start()
-                    break
-
-                # player shoots up
-                elif pygame.key.get_pressed()[pygame.K_UP] != 0:
-                    t = threading.Thread(target=self.shoot, args=(-1,))
-                    t.start()
-                    break
-
-                # player shoots down
-                elif pygame.key.get_pressed()[pygame.K_DOWN] != 0:
-                    t = threading.Thread(target=self.shoot, args=(1,))
-                    t.start()
-                    break
+                t = threading.Thread(target=self.handle_event, args=(event,))
+                t.start()
+                break
 
             # update screen/tick clock
             self.update()
 
         self.ticking = False
         tick_thread.join()
-        self.connection.close()
+        self.client_socket.close()
+        #self.connection.close()
         pygame.quit()
+
+    def handle_event(self, event):
+
+        # top right corner X
+        if event.type == pygame.QUIT:
+            self.done = True
+
+        #  player moves left
+        if pygame.key.get_pressed()[pygame.K_LEFT] != 0:
+            self.move(Dir.LEFT, self.player)
+
+        #  player moves right
+        elif pygame.key.get_pressed()[pygame.K_RIGHT] != 0:
+            self.move(Dir.RIGHT, self.player)
+
+        # player shoots up
+        elif pygame.key.get_pressed()[pygame.K_UP] != 0:
+            self.shoot(-1)
+
+        # player shoots down
+        elif pygame.key.get_pressed()[pygame.K_DOWN] != 0:
+            self.shoot(1)

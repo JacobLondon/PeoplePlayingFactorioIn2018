@@ -12,15 +12,15 @@ def main():
 
     # make a server/client interface depending on args
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'c':
-        interface = Connection.create_client()
+        client_num = 1
     else:
-        interface = Connection.create_server()
+        client_num = 0
 
 
     p1 = Player(gsize=gsize)
     p2 = Player(number=1, gsize=gsize)
 
-    game = Controller(square, gsize, p1, p2, interface, cooldown)
+    game = Controller(square, gsize, p1, p2, client_num, cooldown)
     game.run()
 
 if __name__ == '__main__':
