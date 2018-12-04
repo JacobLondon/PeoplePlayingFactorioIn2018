@@ -1,4 +1,4 @@
-import pygame, numpy as np, time, threading
+import pygame, numpy as np, time, threading, copy
 from sprite import Player, Missile
 from network_interface import Connection, Type
 from gamestate import State, json2obj
@@ -33,6 +33,7 @@ class Controller(object):
         self.tick_rate = 20
         self.ticking = True
         self.done = False
+        self.drawing_missiles = False
 
         self.client_num = client_num
 
@@ -50,7 +51,7 @@ class Controller(object):
         # hold the missiles until tick, then empty the buffer
         self.missile_buffer = []
         # object which stores the data for the state
-        self.gamestate = State(self.p1, self.p2, self.missiles)
+        self.gamestate = State(self.p1, self.p2, self.missiles, self.client_num)
         # the serialized data for state transmission
         self.serialized_state = self.gamestate.get_state()
         # control the speed of the player shooting
@@ -69,6 +70,9 @@ class Controller(object):
 
     def draw_missiles(self):
 
+        #while not self.drawing_missiles:
+        #    yield
+
         # update each missile
         for m in self.missiles:
 
@@ -76,7 +80,9 @@ class Controller(object):
             self.draw_tile(m.loc[0], m.loc[1], self.BLACK)
 
             # update to next pos
-            m.loc = (m.loc[0], m.loc[1] + m.dir)
+            temp = list(m.loc)
+            temp[1] = temp[1] + m.dir
+            m.loc = tuple(temp)
 
             # remove if it went off the screen
             if m.loc[1] < 0 or m.loc[1] > self.size:
@@ -84,6 +90,8 @@ class Controller(object):
                 continue
 
             self.draw_player(m)
+
+        self.drawing_missiles = False
 
     def move(self, direction, player):
 
@@ -110,7 +118,7 @@ class Controller(object):
             missile = Missile(dir=dir)
             missile.loc = (self.player.loc[0], self.player.loc[1] + missile.dir)
             self.missiles.append(missile)
-            self.missile_buffer.append(missile)
+            self.missile_buffer.append(copy.deepcopy(missile))
 
             # cannot fire again until the cooldown timer is done
             self.fire_ready = False
@@ -123,8 +131,8 @@ class Controller(object):
             # interface with network every tick
             s_thread = threading.Thread(target=self.send, args=())
             s_thread.start()
-            r_thread = threading.Thread(target=self.receive, args=())
-            r_thread.start()
+            #r_thread = threading.Thread(target=self.receive, args=())
+            #r_thread.start()
             time.sleep(1 / self.tick_rate)
 
     def send(self):
@@ -139,25 +147,32 @@ class Controller(object):
         self.missile_buffer = []
 
     def receive(self):
-        #try:
+
         received_data = self.client_socket.recv(4096).decode("utf8")
         print(received_data)
+
         # convert json to object
         temp_gamestate = json2obj(received_data)
 
+        while self.drawing_missiles:
+            yield
+
         # load the new missiles
         for m in temp_gamestate.missile_buffer:
-            self.missiles.append(m)
 
+            # player cannot receive their own missiles
+
+            if self.player.number == temp_gamestate.number:
+                self.missiles.append(m)
+
+        self.drawing_missiles = True
+
+#TODO this is bad make reference to other play
         # set pos of the other player
         if self.player.number == 0:
             self.p2.loc = temp_gamestate.p2_loc
         else:
             self.p1.loc = temp_gamestate.p1_loc
-
-        # client may have exited
-        #except OSError:
-        #    return
 
     def update(self):
 
@@ -166,9 +181,9 @@ class Controller(object):
         t.start()
         self.draw_player(self.player)
         self.draw_player(self.p2)
-
+#TODO p2 should not be here that is bad
         # set gamestate
-        self.gamestate.set_state(self.player, self.p2, self.missile_buffer)
+        self.gamestate.set_state(self.p1, self.p2, self.missile_buffer)
 
         #print(threading.active_count())
 
@@ -192,11 +207,7 @@ class Controller(object):
             # update screen/tick clock
             self.update()
 
-        self.ticking = False
-        tick_thread.join()
-        self.client_socket.close()
-        #self.connection.close()
-        pygame.quit()
+        self.close()
 
     def handle_event(self, event):
 
@@ -219,3 +230,9 @@ class Controller(object):
         # player shoots down
         elif pygame.key.get_pressed()[pygame.K_DOWN] != 0:
             self.shoot(1)
+
+    def close(self):
+        self.ticking = False
+        self.client_socket.send(bytes("{quit}", "utf8"))
+        self.client_socket.close()
+        pygame.quit()

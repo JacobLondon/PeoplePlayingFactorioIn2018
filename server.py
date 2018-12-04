@@ -1,7 +1,7 @@
 """Server for multithreaded encrypted chat script."""
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
-import string
+import string, time
 
 HOST = '' # localhost
 PORT = 5678
@@ -24,18 +24,17 @@ def handleClient(client):
     clients[client] = name # add new client to array of client sockets
 
     while True:
+
+        if message == "{quit}":
+            client.close()
+            del clients[client]
+            break
+
         message = client.recv(BUFFERSIZE) # receive messages from clients
         broadcast(message)
-        #print(message)
+        print(message)
+        time.sleep(1/20)
 
-"""
-        if message.decode('utf8') != encryptString("{quit}"):
-            broadcast(message)
-        else:
-            client.close()
-            #del clients[client]
-            break
-"""
 
 def broadcast(message):
     """Broadcasts a message to all the clients."""

@@ -11,12 +11,13 @@ def json2obj(data):
 
 class State(object):
 
-    def __init__(self, p1, p2, missile_buffer):
+    def __init__(self, p1, p2, missile_buffer, number):
 
+        self.number = number
         self.p1_loc = p1.loc
         self.p2_loc = p2.loc
         self.missile_buffer = missile_buffer
-        self.state = None
+        #self.state = None
 
     def set_state(self, p1, p2, missile_buffer):
         self.p1_loc = p1.loc
