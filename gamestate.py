@@ -1,4 +1,4 @@
-import json, getpass
+import json
 from sprite import Player
 from collections import namedtuple
 
@@ -17,7 +17,6 @@ class State(object):
         self.p1_loc = p1.loc
         self.p2_loc = p2.loc
         self.missile_buffer = missile_buffer
-        #self.state = None
 
     def set_state(self, p1, p2, missile_buffer):
         self.p1_loc = p1.loc
@@ -25,5 +24,5 @@ class State(object):
         self.missile_buffer = missile_buffer
 
     # turns the object into a json string
-    def get_state(self):
+    def get_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)

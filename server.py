@@ -1,61 +1,79 @@
-"""Server for multithreaded encrypted chat script."""
-from socket import AF_INET, socket, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
-import string, time
+import time
 
-HOST = '' # localhost
-PORT = 5678
+# server vars
+address = ('', 5678)
+clients = {}
+addresses = {}
+buffersize = 4096
+tick_rate = 20
+disconnect = 'QUIT'
+encoding = 'utf8'
 
-def handleNewConnection():
-    """Handle a new incoming client."""
-    while True:
-        client, clientAddress = SERVER.accept()
-        print("%s:%s has connected." % clientAddress)
-        addresses[client] = clientAddress # add client address to addresses array
-        Thread(target=handleClient, args=(client,)).start() # start thread for client
-
-
- # Takes client socket as argument.
-def handleClient(client):
-    """Handles a single client connection."""
-
-    message = ''
-    name = client.recv(BUFFERSIZE).decode("utf8")
-    clients[client] = name # add new client to array of client sockets
-
+# await clients to join server
+def await_clients():
     while True:
 
-        if message == "{quit}":
+        client, client_address = server.accept()
+        print("%s:%s has connected." % client_address)
+
+        # add client address to addresses array
+        addresses[client] = client_address
+
+        # start thread for client
+        Thread(target=handle_client, args=(client,)).start()
+
+# handle data transmission for a given client
+def handle_client(client):
+
+    message = b''
+
+    # add new client to array of client sockets
+    name = client.recv(buffersize).decode(encoding)
+    clients[client] = name
+
+    while True:
+
+        # receive data from clients
+        try:
+            message = client.recv(buffersize)
+
+        # the client forcibly disconnected
+        except:
+            message = bytes(disconnect, encoding)
+
+        # check if the client wants to disconnect
+        if message.decode(encoding) == disconnect:
             client.close()
+            print("%s:%s has disconnected." % addresses[client])
             del clients[client]
             break
 
-        message = client.recv(BUFFERSIZE) # receive messages from clients
+        # send data to all clients
         broadcast(message)
-        print(message)
-        time.sleep(1/20)
+        #print(message.decode(encoding))
+        time.sleep(1 / tick_rate)
 
-
+# send binary data to all clients
 def broadcast(message):
-    """Broadcasts a message to all the clients."""
 
-    # loop through all connected sockets and send the message to them
-    for sock in clients:
-        sock.send(message)
+    # send message to all clients
+    for client in clients:
+        client.send(message)
 
+# prepare server
+server = socket(AF_INET, SOCK_STREAM)
+server.bind(address)
+
+# listen for maximum connections made to the socket
+server.listen(2)
+
+# handle client connections in another thread
+connection_thread = Thread(target=await_clients)
+connection_thread.start()
 print('Server Started')
 
-clients = {}
-addresses = {}
-
-BUFFERSIZE = 4096
-ADDRESS = (HOST, PORT)
-
-SERVER = socket(AF_INET, SOCK_STREAM)
-SERVER.bind(ADDRESS)
-
-SERVER.listen(2) # listen for maximum connections made to the socket
-CLIENT_THREAD = Thread(target=handleNewConnection) # New thread for handling client connections
-CLIENT_THREAD.start()
-CLIENT_THREAD.join()
-SERVER.close()
+# server shutdown
+connection_thread.join()
+server.close()

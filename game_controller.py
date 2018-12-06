@@ -1,8 +1,7 @@
 import pygame, numpy as np, time, threading, copy
 from sprite import Player, Missile
-from network_interface import Connection, Type
+from client import Client
 from gamestate import State, json2obj
-from socket import AF_INET, socket, SOCK_STREAM
 from enum import Enum
 
 class Dir(Enum):
@@ -33,13 +32,10 @@ class Controller(object):
         self.tick_rate = 20
         self.ticking = True
         self.done = False
-        self.drawing_missiles = False
+        #self.drawing_missiles = False
 
         self.client_num = client_num
-
-        ADDR = ('127.0.0.1', 5678) # Address according to host IP and port
-        self.client_socket = socket(AF_INET, SOCK_STREAM) # Create socket using Python sockets
-        self.client_socket.connect(ADDR) # Connect socket using host and port
+        self.client = Client(client_num)
 
         # load players
         self.p1 = p1
@@ -52,8 +48,6 @@ class Controller(object):
         self.missile_buffer = []
         # object which stores the data for the state
         self.gamestate = State(self.p1, self.p2, self.missiles, self.client_num)
-        # the serialized data for state transmission
-        self.serialized_state = self.gamestate.get_state()
         # control the speed of the player shooting
         self.cooldown = cooldown
         self.fire_ready = True
@@ -64,17 +58,20 @@ class Controller(object):
         pygame.draw.rect(self.display, color, \
             [self.square * x, self.square * y, self.square, self.square])
 
-    def draw_player(self, player):
+    def draw_sprite(self, sprite):
 
-        self.draw_tile(player.loc[0], player.loc[1], player.color)
+        self.draw_tile(sprite.loc[0], sprite.loc[1], sprite.color)
 
     def draw_missiles(self):
 
         #while not self.drawing_missiles:
-        #    yield
+        #    pass
+
+        # only update missiles which were not still being received
+        temp_missiles = self.missiles[0:-1]
 
         # update each missile
-        for m in self.missiles:
+        for m in temp_missiles:
 
             # remove the previous missile square
             self.draw_tile(m.loc[0], m.loc[1], self.BLACK)
@@ -89,9 +86,9 @@ class Controller(object):
                 self.missiles.remove(m)
                 continue
 
-            self.draw_player(m)
+            self.draw_sprite(m)
 
-        self.drawing_missiles = False
+        #self.drawing_missiles = False
 
     def move(self, direction, player):
 
@@ -131,57 +128,52 @@ class Controller(object):
             # interface with network every tick
             s_thread = threading.Thread(target=self.send, args=())
             s_thread.start()
-            #r_thread = threading.Thread(target=self.receive, args=())
-            #r_thread.start()
+            r_thread = threading.Thread(target=self.receive, args=())
+            r_thread.start()
             time.sleep(1 / self.tick_rate)
 
     def send(self):
 
-        # get json string from binary
-        self.serialized_state = self.gamestate.get_state()
-
-        # send gamestate
-        self.client_socket.send(bytes(self.serialized_state, "utf8"))
+        # send gamestate as a json
+        self.client.send(self.gamestate.get_json())
 
         # empty the buffer because it will have been sent
         self.missile_buffer = []
 
     def receive(self):
 
-        received_data = self.client_socket.recv(4096).decode("utf8")
+        received_data = self.client.receive()
         print(received_data)
 
         # convert json to object
-        temp_gamestate = json2obj(received_data)
+        received_state = json2obj(received_data)
 
-        while self.drawing_missiles:
-            yield
+        #while self.drawing_missiles:
+        #    pass
 
         # load the new missiles
-        for m in temp_gamestate.missile_buffer:
+        for m in received_state.missile_buffer:
 
             # player cannot receive their own missiles
-
-            if self.player.number == temp_gamestate.number:
+            if self.player.number != received_state.number:
                 self.missiles.append(m)
 
-        self.drawing_missiles = True
+        #self.drawing_missiles = True
 
-#TODO this is bad make reference to other play
         # set pos of the other player
         if self.player.number == 0:
-            self.p2.loc = temp_gamestate.p2_loc
+            self.p2.loc = received_state.p2_loc
         else:
-            self.p1.loc = temp_gamestate.p1_loc
+            self.p1.loc = received_state.p1_loc
 
     def update(self):
 
         # update players
         t = threading.Thread(target=self.draw_missiles, args=())
         t.start()
-        self.draw_player(self.player)
-        self.draw_player(self.p2)
-#TODO p2 should not be here that is bad
+        self.draw_sprite(self.p1)
+        self.draw_sprite(self.p2)
+
         # set gamestate
         self.gamestate.set_state(self.p1, self.p2, self.missile_buffer)
 
@@ -207,7 +199,10 @@ class Controller(object):
             # update screen/tick clock
             self.update()
 
-        self.close()
+        self.ticking = False
+        tick_thread.join()
+        self.client.close()
+        pygame.quit()
 
     def handle_event(self, event):
 
@@ -230,9 +225,3 @@ class Controller(object):
         # player shoots down
         elif pygame.key.get_pressed()[pygame.K_DOWN] != 0:
             self.shoot(1)
-
-    def close(self):
-        self.ticking = False
-        self.client_socket.send(bytes("{quit}", "utf8"))
-        self.client_socket.close()
-        pygame.quit()
