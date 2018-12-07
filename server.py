@@ -8,8 +8,8 @@ clients = {}
 addresses = {}
 buffersize = 4096
 tick_rate = 20
-disconnect = 'QUIT'
 encoding = 'utf8'
+disconnect = 'QUIT'
 
 # await clients to join server
 def await_clients():
@@ -32,28 +32,35 @@ def handle_client(client):
     # add new client to array of client sockets
     name = client.recv(buffersize).decode(encoding)
     clients[client] = name
+    connected = True
 
-    while True:
+    while connected:
 
         # receive data from clients
         try:
             message = client.recv(buffersize)
-
         # the client forcibly disconnected
         except:
-            message = bytes(disconnect, encoding)
+            connected = False
 
         # check if the client wants to disconnect
         if message.decode(encoding) == disconnect:
-            client.close()
-            print("%s:%s has disconnected." % addresses[client])
-            del clients[client]
+            connected = False
             break
 
         # send data to all clients
-        broadcast(message, name)
+        try:
+            broadcast(message, name)
+        # the client forcibly disconnected
+        except:
+            connected = False
+
         #print(message.decode(encoding))
         time.sleep(1 / tick_rate)
+
+    client.close()
+    print("%s:%s has disconnected." % addresses[client])
+    del clients[client]
 
 # send binary data to all clients
 def broadcast(message, sender):

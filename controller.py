@@ -32,7 +32,6 @@ class Controller(object):
         self.tick_rate = 20
         self.ticking = True
         self.done = False
-        #self.drawing_missiles = False
 
         self.client_num = client_num
         self.client = Client(client_num)
@@ -47,7 +46,7 @@ class Controller(object):
         # hold the missiles until tick, then empty the buffer
         self.missile_buffer = []
         # object which stores the data for the state
-        self.gamestate = State(self.p1, self.p2, self.missiles, self.client_num)
+        self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client_num)
         # control the speed of the player shooting
         self.cooldown = cooldown
         self.fire_ready = True
@@ -74,10 +73,6 @@ class Controller(object):
             self.draw_tile(m.loc[0], m.loc[1], self.BLACK)
 
             # update to next pos
-            #temp = list(m.loc)
-            #temp[1] = temp[1] + m.dir
-            #m.loc = tuple(temp)
-            print(type(m.loc))
             m.loc = (m.loc[0], m.loc[1] + m.dir)
 
             # remove if it went off the screen
@@ -156,7 +151,10 @@ class Controller(object):
 
         # convert json to object
         received_state = json2obj(received_data)
-        
+
+        #if len(received_state.missile_buffer) > 0:
+        #    print(received_data)
+
         # player cannot receive their own missiles
         if self.player.number != received_state.number:
 
@@ -182,7 +180,7 @@ class Controller(object):
         self.draw_sprite(self.p2)
 
         # set gamestate
-        self.gamestate.set_state(self.p1, self.p2, self.missile_buffer)
+        self.gamestate.set_state(self.p1.loc, self.p2.loc, self.missile_buffer)
 
         #print(threading.active_count())
 

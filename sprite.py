@@ -1,9 +1,9 @@
 
 class Sprite(object):
 
-    def __init__(self, color=(0,0,0)):
+    def __init__(self, color=(0,0,0), loc=(0, 0)):
         self.color = color
-        self.loc = (0, 0)
+        self.loc = loc
 
 class Player(Sprite):
 
@@ -23,7 +23,7 @@ class Player(Sprite):
 
 class Missile(Sprite):
 
-    def __init__(self, color=(0,255,0), dir=1):
+    def __init__(self, color=(0,255,0), loc=(0, 0), dir=1):
 
-        Sprite.__init__(self, color=color)
+        Sprite.__init__(self, color=color, loc=loc)
         self.dir = dir

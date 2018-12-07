@@ -1,5 +1,8 @@
 from socket import socket, AF_INET, SOCK_STREAM
 
+# address according to host IP and port
+address = ('127.0.0.1', 5678)
+buffersize = 4096
 encoding = 'utf8'
 disconnect = 'QUIT'
 
@@ -8,9 +11,6 @@ class Client(object):
     def __init__(self, number):
 
         self.number = str(number)
-
-        # address according to host IP and port
-        address = ('127.0.0.1', 5678)
 
         # create and connect socket
         self.socket = socket(AF_INET, SOCK_STREAM)
@@ -24,7 +24,7 @@ class Client(object):
         self.socket.send(bytes(message, encoding))
 
     def receive(self):
-        message = self.socket.recv(4096).decode(encoding)
+        message = self.socket.recv(buffersize).decode(encoding)
         return message
 
     def close(self):
