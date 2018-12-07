@@ -26,5 +26,4 @@ class Missile(Sprite):
     def __init__(self, color=(0,255,0), dir=1):
 
         Sprite.__init__(self, color=color)
-
         self.dir = dir

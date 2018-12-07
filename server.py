@@ -51,16 +51,17 @@ def handle_client(client):
             break
 
         # send data to all clients
-        broadcast(message)
+        broadcast(message, name)
         #print(message.decode(encoding))
         time.sleep(1 / tick_rate)
 
 # send binary data to all clients
-def broadcast(message):
+def broadcast(message, sender):
 
-    # send message to all clients
+    # send message to all other clients
     for client in clients:
-        client.send(message)
+        if clients[client] != sender:
+            client.send(message)
 
 # prepare server
 server = socket(AF_INET, SOCK_STREAM)

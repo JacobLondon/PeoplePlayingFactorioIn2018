@@ -55,11 +55,10 @@ class Controller(object):
     def draw_tile(self, x, y, color):
 
         # [left, top, width, height]
-        pygame.draw.rect(self.display, color, \
-            [self.square * x, self.square * y, self.square, self.square])
+        area = [self.square * x, self.square * y, self.square, self.square]
+        pygame.draw.rect(self.display, color, area)
 
     def draw_sprite(self, sprite):
-
         self.draw_tile(sprite.loc[0], sprite.loc[1], sprite.color)
 
     def draw_missiles(self):
@@ -68,7 +67,8 @@ class Controller(object):
         #    pass
 
         # only update missiles which were not still being received
-        temp_missiles = self.missiles[0:-1]
+        size = len(self.missiles)
+        temp_missiles = copy.deepcopy(self.missiles[0:size])
 
         # update each missile
         for m in temp_missiles:
@@ -77,17 +77,19 @@ class Controller(object):
             self.draw_tile(m.loc[0], m.loc[1], self.BLACK)
 
             # update to next pos
-            temp = list(m.loc)
-            temp[1] = temp[1] + m.dir
-            m.loc = tuple(temp)
+            #temp = list(m.loc)
+            #temp[1] = temp[1] + m.dir
+            #m.loc = tuple(temp)
+            m.loc = (m.loc[0], m.loc[1] + m.dir)
 
             # remove if it went off the screen
-            if m.loc[1] < 0 or m.loc[1] > self.size:
-                self.missiles.remove(m)
+            if m.loc[1] < 0 or m.loc[1] > self.size / self.square:
+                temp_missiles.remove(m)
                 continue
 
             self.draw_sprite(m)
 
+        self.missiles = temp_missiles + self.missiles[size + 1:-1]
         #self.drawing_missiles = False
 
     def move(self, direction, player):
@@ -135,15 +137,25 @@ class Controller(object):
     def send(self):
 
         # send gamestate as a json
-        self.client.send(self.gamestate.get_json())
+        try:
+            self.client.send(self.gamestate.get_json())
+        # the host was forcibly closed, end the program
+        except:
+            self.done = True
+            return
 
         # empty the buffer because it will have been sent
         self.missile_buffer = []
 
     def receive(self):
 
-        received_data = self.client.receive()
-        print(received_data)
+        try:
+            received_data = self.client.receive()
+            #print(received_data)
+        # the host was forcibly closed, end the program
+        except:
+            self.done = True
+            return
 
         # convert json to object
         received_state = json2obj(received_data)
@@ -151,26 +163,29 @@ class Controller(object):
         #while self.drawing_missiles:
         #    pass
 
-        # load the new missiles
-        for m in received_state.missile_buffer:
+        # player cannot receive their own missiles
+        if self.player.number != received_state.number:
 
-            # player cannot receive their own missiles
-            if self.player.number != received_state.number:
+            # load the new missiles
+            for m in received_state.missile_buffer:
                 self.missiles.append(m)
 
         #self.drawing_missiles = True
 
         # set pos of the other player
         if self.player.number == 0:
+            self.draw_tile(self.p2.loc[0], self.p2.loc[1], self.BLACK)
             self.p2.loc = received_state.p2_loc
         else:
+            self.draw_tile(self.p1.loc[0], self.p1.loc[1], self.BLACK)
             self.p1.loc = received_state.p1_loc
 
     def update(self):
 
         # update players
-        t = threading.Thread(target=self.draw_missiles, args=())
-        t.start()
+        #t = threading.Thread(target=self.draw_missiles, args=())
+        #t.start()
+        self.draw_missiles()
         self.draw_sprite(self.p1)
         self.draw_sprite(self.p2)
 

@@ -1,5 +1,5 @@
 import sys
-from game_controller import Controller
+from controller import Controller
 from sprite import Player
 
 square = 20    # size of each pixel

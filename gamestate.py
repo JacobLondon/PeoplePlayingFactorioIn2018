@@ -1,5 +1,4 @@
 import json
-from sprite import Player
 from collections import namedtuple
 
 # turn json string to object
