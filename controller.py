@@ -63,9 +63,6 @@ class Controller(object):
 
     def draw_missiles(self):
 
-        #while not self.drawing_missiles:
-        #    pass
-
         # only update missiles which were not still being received
         size = len(self.missiles)
         temp_missiles = copy.deepcopy(self.missiles[0:size])
@@ -80,6 +77,7 @@ class Controller(object):
             #temp = list(m.loc)
             #temp[1] = temp[1] + m.dir
             #m.loc = tuple(temp)
+            print(type(m.loc))
             m.loc = (m.loc[0], m.loc[1] + m.dir)
 
             # remove if it went off the screen
@@ -90,7 +88,6 @@ class Controller(object):
             self.draw_sprite(m)
 
         self.missiles = temp_missiles + self.missiles[size + 1:-1]
-        #self.drawing_missiles = False
 
     def move(self, direction, player):
 
@@ -159,18 +156,13 @@ class Controller(object):
 
         # convert json to object
         received_state = json2obj(received_data)
-
-        #while self.drawing_missiles:
-        #    pass
-
+        
         # player cannot receive their own missiles
         if self.player.number != received_state.number:
 
             # load the new missiles
             for m in received_state.missile_buffer:
                 self.missiles.append(m)
-
-        #self.drawing_missiles = True
 
         # set pos of the other player
         if self.player.number == 0:
