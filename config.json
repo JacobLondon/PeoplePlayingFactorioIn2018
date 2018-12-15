@@ -1,0 +1,10 @@
+{
+    "client_ip": "127.0.0.1",
+    "server_ip": "",
+    "port": 5678,
+    "buffer_size": 4096,
+    "encoding": "utf8",
+    "disconnect": "quit",
+    "tick_rate": 20,
+    "num_clients": 2
+}

@@ -1,8 +1,9 @@
 import pygame, numpy as np, time, threading, copy
+from enum import Enum
+
 from sprite import Player, Missile
 from client import Client
 from gamestate import State, json2obj
-from enum import Enum
 
 class Dir(Enum):
     RIGHT = 0
@@ -149,8 +150,10 @@ class Controller(object):
             self.done = True
             return
 
-        # convert json to object
+        # convert json to object if there is data
         received_state = json2obj(received_data)
+        #if received_state == None:
+        #    return
 
         #if len(received_state.missile_buffer) > 0:
         #    print(received_data)

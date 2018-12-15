@@ -1,5 +1,5 @@
 import json
-from collections import namedtuple
+
 from sprite import Missile
 
 # turn json string to object
@@ -12,7 +12,16 @@ def _json_object_hook(d):
         return Missile(**d)
 
 def json2obj(data):
-    return json.loads(data, object_hook=_json_object_hook)
+
+    print('data:')
+    print(data)
+
+    try:
+        obj = json.loads(data, object_hook=_json_object_hook)
+    except:
+        obj = None
+    finally:
+        return obj
 
 class State(object):
 

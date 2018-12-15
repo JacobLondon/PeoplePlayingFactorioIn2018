@@ -1,4 +1,5 @@
 import sys
+
 from controller import Controller
 from sprite import Player
 

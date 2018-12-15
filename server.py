@@ -3,10 +3,13 @@ from threading import Thread
 import time
 
 # server vars
-address = ('', 5678)
+addr = ''
+port = 5678
+address = (addr, port)
 clients = {}
 addresses = {}
 buffersize = 4096
+
 tick_rate = 20
 encoding = 'utf8'
 disconnect = 'QUIT'
@@ -64,7 +67,7 @@ def handle_client(client):
 
 # send binary data to all clients
 def broadcast(message, sender):
-
+    print(message)
     # send message to all other clients
     for client in clients:
         if clients[client] != sender:
