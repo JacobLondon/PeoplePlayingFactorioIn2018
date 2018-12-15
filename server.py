@@ -2,89 +2,90 @@ from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 import time
 
-# server vars
-addr = ''
-port = 5678
-address = (addr, port)
-clients = {}
-addresses = {}
-buffersize = 4096
+from config import settings
 
-tick_rate = 20
-encoding = 'utf8'
-disconnect = 'QUIT'
+class Server(object):
 
-# await clients to join server
-def await_clients():
-    while True:
+    def __init__(self):
+        self.clients = {}
+        self.addresses = {}
+        self.run()
 
-        client, client_address = server.accept()
-        print("%s:%s has connected." % client_address)
+    # await clients to join server
+    def await_clients(self):
 
-        # add client address to addresses array
-        addresses[client] = client_address
+        while True:
+            client, client_address = self.server.accept()
+            print("%s:%s has connected." % client_address)
 
-        # start thread for client
-        Thread(target=handle_client, args=(client,)).start()
+            # add client address to addresses array
+            self.addresses[client] = client_address
 
-# handle data transmission for a given client
-def handle_client(client):
+            # start thread for client
+            Thread(target=self.handle_client, args=(client,)).start()
 
-    message = b''
+    # handle data transmission for a given client
+    def handle_client(self, client):
 
-    # add new client to array of client sockets
-    name = client.recv(buffersize).decode(encoding)
-    clients[client] = name
-    connected = True
+        message = b''
 
-    while connected:
+        # add new client to array of client sockets
+        name = client.recv(settings.buffer_size).decode(settings.encoding)
+        self.clients[client] = name
+        connected = True
 
-        # receive data from clients
-        try:
-            message = client.recv(buffersize)
-        # the client forcibly disconnected
-        except:
-            connected = False
+        while connected:
 
-        # check if the client wants to disconnect
-        if message.decode(encoding) == disconnect:
-            connected = False
-            break
+            # receive data from clients
+            try:
+                message = client.recv(settings.buffer_size)
+            # the client forcibly disconnected
+            except:
+                connected = False
 
-        # send data to all clients
-        try:
-            broadcast(message, name)
-        # the client forcibly disconnected
-        except:
-            connected = False
+            # check if the client wants to disconnect
+            if message.decode(settings.encoding) == settings.disconnect:
+                connected = False
+                break
 
-        #print(message.decode(encoding))
-        time.sleep(1 / tick_rate)
+            # send data to all clients
+            try:
+                self.broadcast(message, name)
+            # the client forcibly disconnected
+            except:
+                connected = False
 
-    client.close()
-    print("%s:%s has disconnected." % addresses[client])
-    del clients[client]
+            #print(message.decode(encoding))
+            time.sleep(1 / settings.tick_rate)
 
-# send binary data to all clients
-def broadcast(message, sender):
-    print(message)
-    # send message to all other clients
-    for client in clients:
-        if clients[client] != sender:
-            client.send(message)
+        client.close()
+        print("%s:%s has disconnected." % self.addresses[client])
+        del self.clients[client]
 
-# prepare server
-server = socket(AF_INET, SOCK_STREAM)
-server.bind(address)
+    # send binary data to all clients
+    def broadcast(self, message, sender):
 
-# listen for maximum connections made to the socket
-server.listen(2)
+        # send message to all other clients
+        for client in self.clients:
+            if self.clients[client] != sender:
+                client.send(message)
 
-# handle client connections in another thread
-connection_thread = Thread(target=await_clients)
-connection_thread.start()
-print('Server Started')
+    def run(self):
+        # prepare server
+        self.server = socket(AF_INET, SOCK_STREAM)
+        self.server.bind(settings.server_address)
 
-# server shutdown
-connection_thread.join()
-server.close()
+        # listen for maximum connections made to the socket
+        self.server.listen(settings.num_clients)
+
+        # handle client connections in another thread
+        connection_thread = Thread(target=self.await_clients)
+        connection_thread.start()
+        print('Server Started')
+
+        # server shutdown
+        connection_thread.join()
+        self.server.close()
+
+if __name__ == '__main__':
+    server = Server()

@@ -2,16 +2,6 @@ from socket import socket, AF_INET, SOCK_STREAM
 
 from config import settings
 
-# local connect
-#addr = '127.0.0.1'
-#addr = '70.95.45.63'
-#port = 5678
-#address = (addr, port)
-#buffersize = 4096
-
-#encoding = 'utf8'
-#disconnect = 'QUIT'
-
 class Client(object):
 
     def __init__(self, number):
