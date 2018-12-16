@@ -48,14 +48,13 @@ class Server(object):
                 connected = False
                 break
 
-            # send data to all clients
+            # send data to all other clients
             try:
                 self.broadcast(message, name)
             # the client forcibly disconnected
             except:
                 connected = False
 
-            #print(message.decode(encoding))
             time.sleep(1 / settings.tick_rate)
 
         client.close()

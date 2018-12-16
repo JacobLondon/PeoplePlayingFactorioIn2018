@@ -1,61 +1,48 @@
-import pygame, numpy as np, time, threading, copy
+import pygame, time, threading, copy
 from enum import Enum
 
 from sprite import Player, Missile
 from client import Client
 from gamestate import State, json2obj
-
-class Dir(Enum):
-    RIGHT = 0
-    LEFT = 1
+from config import settings
+from constants import color, dir
 
 class Controller(object):
 
-    """
-    @param square: size of each tile in pixels
-    @param size: number of squares wide the screen is
-    """
-    def __init__(self, square, size, p1, p2, client_num, cooldown):
-
-        self.square = square
-        self.size = square * size
-        self.BLACK = (0,0,0)
+    def __init__(self, client_id):
 
         # pygame tools
         pygame.init()
         pygame.font.init()
-        self.display = pygame.display.set_mode((self.size, self.size))
+        self.display = pygame.display.set_mode((settings.display_size, settings.display_size))
         pygame.display.set_caption('PPFI18')
         pygame.display.update()
-
         self.clock = pygame.time.Clock()
-        self.refresh_rate = 60
-        self.tick_rate = 20
         self.ticking = True
         self.done = False
 
-        self.client_num = client_num
-        self.client = Client(client_num)
+        self.client = Client(client_id)
 
         # load players
-        self.p1 = p1
-        self.p2 = p2
+        self.p1 = Player.create_playerone()
+        self.p2 = Player.create_playertwo()
         # the player changes depending on client or server
-        self.player = self.p1 if self.client_num == 0 else self.p2
+        self.player = self.p1 if self.client.id == 0 else self.p2
 
         self.missiles = []
         # hold the missiles until tick, then empty the buffer
         self.missile_buffer = []
         # object which stores the data for the state
-        self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client_num)
+        self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client.id)
         # control the speed of the player shooting
-        self.cooldown = cooldown
+        self.cooldown = settings.cooldown
         self.fire_ready = True
 
     def draw_tile(self, x, y, color):
 
         # [left, top, width, height]
-        area = [self.square * x, self.square * y, self.square, self.square]
+        area = [settings.square_size * x, settings.square_size * y,
+                settings.square_size, settings.square_size]
         pygame.draw.rect(self.display, color, area)
 
     def draw_sprite(self, sprite):
@@ -63,40 +50,34 @@ class Controller(object):
 
     def draw_missiles(self):
 
-        # only update missiles which were not still being received
-        size = len(self.missiles)
-        temp_missiles = copy.deepcopy(self.missiles[0:size])
-
         # update each missile
-        for m in temp_missiles:
+        for m in self.missiles:
 
             # remove the previous missile square
-            self.draw_tile(m.loc[0], m.loc[1], self.BLACK)
+            self.draw_tile(m.loc[0], m.loc[1], color.black)
 
             # update to next pos
             m.loc = (m.loc[0], m.loc[1] + m.dir)
 
             # remove if it went off the screen
-            if m.loc[1] < 0 or m.loc[1] > self.size / self.square:
-                temp_missiles.remove(m)
+            if m.loc[1] < 0 or m.loc[1] > settings.grid_size:
+                self.missiles.remove(m)
                 continue
 
             self.draw_sprite(m)
 
-        self.missiles = temp_missiles + self.missiles[size + 1:-1]
-
     def move(self, direction, player):
 
         # move left and bounds check
-        if direction == Dir.LEFT:
+        if direction == dir.left:
             if 0 <= player.loc[0] - 1:
-                self.draw_tile(player.loc[0], player.loc[1], self.BLACK)
+                self.draw_tile(player.loc[0], player.loc[1], color.black)
                 player.loc = (player.loc[0] - 1, player.loc[1])
 
         # move right and bounds check
-        elif direction == Dir.RIGHT:
-            if player.loc[0] + 1 < self.size / self.square:
-                self.draw_tile(player.loc[0], player.loc[1], self.BLACK)
+        elif direction == dir.right:
+            if player.loc[0] + 1 < settings.grid_size:
+                self.draw_tile(player.loc[0], player.loc[1], color.black)
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
     def reload(self):
@@ -125,13 +106,13 @@ class Controller(object):
             s_thread.start()
             r_thread = threading.Thread(target=self.receive, args=())
             r_thread.start()
-            time.sleep(1 / self.tick_rate)
+            time.sleep(1 / settings.tick_rate)
 
     def send(self):
 
         # send gamestate as a json
         try:
-            self.client.send(self.gamestate.get_json())
+            self.client.send(self.gamestate.to_json())
         # the host was forcibly closed, end the program
         except:
             self.done = True
@@ -144,7 +125,6 @@ class Controller(object):
 
         try:
             received_data = self.client.receive()
-            #print(received_data)
         # the host was forcibly closed, end the program
         except:
             self.done = True
@@ -152,11 +132,8 @@ class Controller(object):
 
         # convert json to object if there is data
         received_state = json2obj(received_data)
-        #if received_state == None:
-        #    return
-
-        #if len(received_state.missile_buffer) > 0:
-        #    print(received_data)
+        if received_state == None:
+            return
 
         # player cannot receive their own missiles
         if self.player.number != received_state.number:
@@ -167,17 +144,15 @@ class Controller(object):
 
         # set pos of the other player
         if self.player.number == 0:
-            self.draw_tile(self.p2.loc[0], self.p2.loc[1], self.BLACK)
+            self.draw_tile(self.p2.loc[0], self.p2.loc[1], color.black)
             self.p2.loc = received_state.p2_loc
         else:
-            self.draw_tile(self.p1.loc[0], self.p1.loc[1], self.BLACK)
+            self.draw_tile(self.p1.loc[0], self.p1.loc[1], color.black)
             self.p1.loc = received_state.p1_loc
 
     def update(self):
 
         # update players
-        #t = threading.Thread(target=self.draw_missiles, args=())
-        #t.start()
         self.draw_missiles()
         self.draw_sprite(self.p1)
         self.draw_sprite(self.p2)
@@ -185,10 +160,9 @@ class Controller(object):
         # set gamestate
         self.gamestate.set_state(self.p1.loc, self.p2.loc, self.missile_buffer)
 
-        #print(threading.active_count())
-
+        # pygame updates
         pygame.display.update()
-        self.clock.tick(self.refresh_rate)
+        self.clock.tick(settings.refresh_rate)
 
     def run(self):
 
@@ -220,16 +194,16 @@ class Controller(object):
 
         #  player moves left
         if pygame.key.get_pressed()[pygame.K_LEFT] != 0:
-            self.move(Dir.LEFT, self.player)
+            self.move(dir.left, self.player)
 
         #  player moves right
         elif pygame.key.get_pressed()[pygame.K_RIGHT] != 0:
-            self.move(Dir.RIGHT, self.player)
+            self.move(dir.right, self.player)
 
         # player shoots up
         elif pygame.key.get_pressed()[pygame.K_UP] != 0:
-            self.shoot(-1)
+            self.shoot(dir.up)
 
         # player shoots down
         elif pygame.key.get_pressed()[pygame.K_DOWN] != 0:
-            self.shoot(1)
+            self.shoot(dir.down)

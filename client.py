@@ -4,16 +4,16 @@ from config import settings
 
 class Client(object):
 
-    def __init__(self, number):
+    def __init__(self, id):
 
-        self.number = str(number)
+        self.id = id
 
         # create and connect socket
         self.socket = socket(AF_INET, SOCK_STREAM)
         self.socket.connect(settings.client_address)
 
         # give the server the client's name
-        self.send(self.number)
+        self.send(str(self.id))
 
     def send(self, message):
         self.socket.send(bytes(message, settings.encoding))

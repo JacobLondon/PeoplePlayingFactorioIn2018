@@ -13,9 +13,6 @@ def _json_object_hook(d):
 
 def json2obj(data):
 
-    print('data:')
-    print(data)
-
     try:
         obj = json.loads(data, object_hook=_json_object_hook)
     except:
@@ -38,5 +35,5 @@ class State(object):
         self.missile_buffer = missile_buffer
 
     # turns the object into a json string
-    def get_json(self):
+    def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
