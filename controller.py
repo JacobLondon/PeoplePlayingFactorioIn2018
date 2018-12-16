@@ -15,7 +15,7 @@ class Controller(object):
     @param square: size of each tile in pixels
     @param size: number of squares wide the screen is
     """
-    def __init__(self, square, size, p1, p2, client_num, cooldown):
+    def __init__(self, square, size, p1, p2, client_id, cooldown):
 
         self.square = square
         self.size = square * size
@@ -34,20 +34,19 @@ class Controller(object):
         self.ticking = True
         self.done = False
 
-        self.client_num = client_num
-        self.client = Client(client_num)
+        self.client = Client(client_id)
 
         # load players
         self.p1 = p1
         self.p2 = p2
         # the player changes depending on client or server
-        self.player = self.p1 if self.client_num == 0 else self.p2
+        self.player = self.p1 if self.client.id == 0 else self.p2
 
         self.missiles = []
         # hold the missiles until tick, then empty the buffer
         self.missile_buffer = []
         # object which stores the data for the state
-        self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client_num)
+        self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client.id)
         # control the speed of the player shooting
         self.cooldown = cooldown
         self.fire_ready = True
@@ -131,7 +130,7 @@ class Controller(object):
 
         # send gamestate as a json
         try:
-            self.client.send(self.gamestate.get_json())
+            self.client.send(self.gamestate.json_serialize())
         # the host was forcibly closed, end the program
         except:
             self.done = True
@@ -144,7 +143,6 @@ class Controller(object):
 
         try:
             received_data = self.client.receive()
-            #print(received_data)
         # the host was forcibly closed, end the program
         except:
             self.done = True
@@ -152,21 +150,18 @@ class Controller(object):
 
         # convert json to object if there is data
         received_state = json2obj(received_data)
-        #if received_state == None:
-        #    return
-
-        #if len(received_state.missile_buffer) > 0:
-        #    print(received_data)
+        if received_state == None:
+            return
 
         # player cannot receive their own missiles
-        if self.player.number != received_state.number:
+        if self.player.id != received_state.id:
 
             # load the new missiles
             for m in received_state.missile_buffer:
                 self.missiles.append(m)
 
         # set pos of the other player
-        if self.player.number == 0:
+        if self.player.id == 0:
             self.draw_tile(self.p2.loc[0], self.p2.loc[1], self.BLACK)
             self.p2.loc = received_state.p2_loc
         else:
@@ -176,16 +171,12 @@ class Controller(object):
     def update(self):
 
         # update players
-        #t = threading.Thread(target=self.draw_missiles, args=())
-        #t.start()
         self.draw_missiles()
         self.draw_sprite(self.p1)
         self.draw_sprite(self.p2)
 
         # set gamestate
         self.gamestate.set_state(self.p1.loc, self.p2.loc, self.missile_buffer)
-
-        #print(threading.active_count())
 
         pygame.display.update()
         self.clock.tick(self.refresh_rate)

@@ -7,19 +7,35 @@ class Sprite(object):
 
 class Player(Sprite):
 
-    def __init__(self, number=0, gsize=10, color=(0,0,255)):
+    def __init__(self, id=0, gsize=10, color=(0,0,255)):
 
         Sprite.__init__(self, color=color)
 
         # player 1
-        self.number = number
-        if self.number == 0:
+        self.id = id
+        if self.id == 0:
             self.loc = (gsize / 2, gsize - 1)
 
         # player 2
-        elif self.number == 1:
+        elif self.id == 1:
             self.loc = (gsize / 2, 0)
             self.color = (255,0,0)
+
+    @staticmethod
+    def create_playerone(gsize):
+        player = Player()
+        player.id = 0
+        player.color = (0,0,255)
+        player.loc = (gsize / 2, gsize - 1)
+        return player
+
+    @staticmethod
+    def create_playertwo(gsize):
+        player = Player()
+        player.id = 1
+        player.color = (255, 0, 0)
+        player.loc = (gisze / 2, 0)
+        return player
 
 class Missile(Sprite):
 

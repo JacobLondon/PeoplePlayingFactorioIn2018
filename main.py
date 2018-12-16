@@ -12,14 +12,16 @@ def main():
 
     # make a server/client interface depending on args
     if len(sys.argv) > 1 and sys.argv[1] == '2':
-        client_num = 1
+        client_id = 1
     else:
-        client_num = 0
+        client_id = 0
 
     p1 = Player(gsize=gsize)
-    p2 = Player(number=1, gsize=gsize)
+    p2 = Player(id=1, gsize=gsize)
+    #p1 = create_playerone(gsize)
+    #p2 = create_playertwo(gsize)
 
-    game = Controller(square, gsize, p1, p2, client_num, cooldown)
+    game = Controller(square, gsize, p1, p2, client_id, cooldown)
     game.run()
 
 if __name__ == '__main__':
