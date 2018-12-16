@@ -11,7 +11,7 @@ def _json_object_hook(d):
     elif all([key in d for key in ['color', 'loc', 'dir']]):
         return Missile(**d)
 
-def json2obj(data):
+def json_to_obj(data):
 
     try:
         obj = json.loads(data, object_hook=_json_object_hook)

@@ -4,7 +4,7 @@ from enum import Enum
 
 from sprite import Player, Missile
 from client import Client
-from gamestate import State, json2obj
+from gamestate import State, json_to_obj
 from config import settings
 from constants import color, dir
 
@@ -35,8 +35,6 @@ class Controller(object):
         self.missile_buffer = []
         # object which stores the data for the state
         self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client.id)
-        # control the speed of the player shooting
-        self.cooldown = settings.cooldown
         self.fire_ready = True
 
     def draw_tile(self, x, y, color):
@@ -82,7 +80,7 @@ class Controller(object):
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
     def reload(self):
-        time.sleep(self.cooldown)
+        time.sleep(settings.cooldown)
         self.fire_ready = True
 
     def shoot(self, dir):
@@ -129,7 +127,7 @@ class Controller(object):
             return
 
         # convert json to object if there is data
-        received_state = json2obj(received_data)
+        received_state = json_to_obj(received_data)
         if received_state == None:
             return
 
