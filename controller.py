@@ -1,4 +1,5 @@
-import pygame, time, threading, copy
+import pygame, time, copy
+from threading import Thread
 from enum import Enum
 
 from sprite import Player, Missile
@@ -95,17 +96,14 @@ class Controller(object):
 
             # cannot fire again until the cooldown timer is done
             self.fire_ready = False
-            t = threading.Thread(target=self.reload, args=())
-            t.start()
+            Thread(target=self.reload, args=()).start()
 
     def tick(self):
         while self.ticking:
 
             # interface with network every tick
-            s_thread = threading.Thread(target=self.send, args=())
-            s_thread.start()
-            r_thread = threading.Thread(target=self.receive, args=())
-            r_thread.start()
+            Thread(target=self.send, args=()).start()
+            Thread(target=self.receive, args=()).start()
             time.sleep(1 / settings.tick_rate)
 
     def send(self):
@@ -166,7 +164,7 @@ class Controller(object):
 
     def run(self):
 
-        tick_thread = threading.Thread(target=self.tick, args=())
+        tick_thread = Thread(target=self.tick, args=())
         tick_thread.start()
 
         # program loop
@@ -174,8 +172,7 @@ class Controller(object):
 
             # traverse all events occurring that frame
             for event in pygame.event.get():
-                t = threading.Thread(target=self.handle_event, args=(event,))
-                t.start()
+                Thread(target=self.handle_event, args=(event,)).start()
                 break
 
             # update screen/tick clock
