@@ -31,23 +31,10 @@ class Controller(object):
         self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client.id)
         self.fire_ready = True
 
-    def draw_tile(self, x, y, color):
-
-        # [left, top, width, height]
-        area = [settings.square_size * x, settings.square_size * y,
-                settings.square_size, settings.square_size]
-        pygame.draw.rect(self.interface.display, color, area)
-
-    def draw_sprite(self, sprite):
-        self.draw_tile(sprite.loc[0], sprite.loc[1], sprite.color)
-
     def draw_missiles(self):
 
         # update each missile
         for m in self.missiles:
-
-            # remove the previous missile square
-            self.draw_tile(m.loc[0], m.loc[1], Color.black)
 
             # update to next pos
             m.loc = (m.loc[0], m.loc[1] + m.dir)
@@ -57,20 +44,18 @@ class Controller(object):
                 self.missiles.remove(m)
                 continue
 
-            self.draw_sprite(m)
+            self.interface.draw_sprite(m)
 
     def move(self, direction, player):
 
         # move left and bounds check
         if direction == Dir.left:
             if 0 <= player.loc[0] - 1:
-                self.draw_tile(player.loc[0], player.loc[1], Color.black)
                 player.loc = (player.loc[0] - 1, player.loc[1])
 
         # move right and bounds check
         elif direction == Dir.right:
             if player.loc[0] + 1 < settings.grid_size:
-                self.draw_tile(player.loc[0], player.loc[1], Color.black)
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
     def reload(self):
@@ -134,25 +119,24 @@ class Controller(object):
 
         # set pos of the other player
         if self.player.number == 0:
-            self.draw_tile(self.p2.loc[0], self.p2.loc[1], Color.black)
             self.p2.loc = received_state.p2_loc
         else:
-            self.draw_tile(self.p1.loc[0], self.p1.loc[1], Color.black)
             self.p1.loc = received_state.p1_loc
 
     def update(self):
 
-        # update players
+        # clear screen before drawing
+        self.interface.clear()
+
+        # update and draw sprites
         self.draw_missiles()
-        self.draw_sprite(self.p1)
-        self.draw_sprite(self.p2)
+        self.interface.draw_sprite(self.p1)
+        self.interface.draw_sprite(self.p2)
 
         # set gamestate
         self.gamestate.set_state(self.p1.loc, self.p2.loc, self.missile_buffer)
 
-        # pygame updates
-        #pygame.display.update()
-        #self.clock.tick(settings.refresh_rate)
+        # pygame update
         self.interface.update()
 
     def run(self):
