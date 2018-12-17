@@ -1,26 +1,28 @@
 import pygame, time, copy
 from threading import Thread
-from enum import Enum
 
 from sprite import Player, Missile
 from client import Client
 from gamestate import State, json_to_obj
 from config import settings
 from constants import Color, Dir
+from display_interface import Interface
 
 class Controller(object):
 
     def __init__(self, client_id):
 
         # pygame tools
-        pygame.init()
-        pygame.font.init()
-        self.display = pygame.display.set_mode((settings.display_size, settings.display_size))
-        pygame.display.set_caption('PPFI18')
-        pygame.display.update()
-        self.clock = pygame.time.Clock()
+        #pygame.init()
+        #pygame.font.init()
+        #self.display = pygame.display.set_mode((settings.display_size, settings.display_size))
+        #pygame.display.set_caption('PPFI18')
+        #pygame.display.update()
+        #self.clock = pygame.time.Clock()
         self.ticking = True
         self.done = False
+
+        self.interface = Interface()
 
         self.client = Client(client_id)
 
@@ -157,8 +159,9 @@ class Controller(object):
         self.gamestate.set_state(self.p1.loc, self.p2.loc, self.missile_buffer)
 
         # pygame updates
-        pygame.display.update()
-        self.clock.tick(settings.refresh_rate)
+        #pygame.display.update()
+        #self.clock.tick(settings.refresh_rate)
+        self.interface.update()
 
     def run(self):
 
