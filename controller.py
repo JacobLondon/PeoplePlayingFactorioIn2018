@@ -6,7 +6,7 @@ from sprite import Player, Missile
 from client import Client
 from gamestate import State, json_to_obj
 from config import settings
-from constants import color, dir
+from constants import Color, Dir
 
 class Controller(object):
 
@@ -53,7 +53,7 @@ class Controller(object):
         for m in self.missiles:
 
             # remove the previous missile square
-            self.draw_tile(m.loc[0], m.loc[1], color.black)
+            self.draw_tile(m.loc[0], m.loc[1], Color.black)
 
             # update to next pos
             m.loc = (m.loc[0], m.loc[1] + m.dir)
@@ -68,15 +68,15 @@ class Controller(object):
     def move(self, direction, player):
 
         # move left and bounds check
-        if direction == dir.left:
+        if direction == Dir.left:
             if 0 <= player.loc[0] - 1:
-                self.draw_tile(player.loc[0], player.loc[1], color.black)
+                self.draw_tile(player.loc[0], player.loc[1], Color.black)
                 player.loc = (player.loc[0] - 1, player.loc[1])
 
         # move right and bounds check
-        elif direction == dir.right:
+        elif direction == Dir.right:
             if player.loc[0] + 1 < settings.grid_size:
-                self.draw_tile(player.loc[0], player.loc[1], color.black)
+                self.draw_tile(player.loc[0], player.loc[1], Color.black)
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
     def reload(self):
@@ -140,10 +140,10 @@ class Controller(object):
 
         # set pos of the other player
         if self.player.number == 0:
-            self.draw_tile(self.p2.loc[0], self.p2.loc[1], color.black)
+            self.draw_tile(self.p2.loc[0], self.p2.loc[1], Color.black)
             self.p2.loc = received_state.p2_loc
         else:
-            self.draw_tile(self.p1.loc[0], self.p1.loc[1], color.black)
+            self.draw_tile(self.p1.loc[0], self.p1.loc[1], Color.black)
             self.p1.loc = received_state.p1_loc
 
     def update(self):
@@ -188,17 +188,17 @@ class Controller(object):
             self.done = True
 
         #  player moves left
-        if pygame.key.get_pressed()[pygame.K_LEFT] != 0:
-            self.move(dir.left, self.player)
+        elif pygame.key.get_pressed()[pygame.K_LEFT] != 0:
+            self.move(Dir.left, self.player)
 
         #  player moves right
         elif pygame.key.get_pressed()[pygame.K_RIGHT] != 0:
-            self.move(dir.right, self.player)
+            self.move(Dir.right, self.player)
 
         # player shoots up
         elif pygame.key.get_pressed()[pygame.K_UP] != 0:
-            self.shoot(dir.up)
+            self.shoot(Dir.up)
 
         # player shoots down
         elif pygame.key.get_pressed()[pygame.K_DOWN] != 0:
-            self.shoot(dir.down)
+            self.shoot(Dir.down)
