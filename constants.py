@@ -6,6 +6,8 @@ class Color(object):
     blue = (0,0,255)
     green = (0,255,0)
 
+    background = black
+
 class Dir(object):
 
     right = 2
