@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
-from threading import Thread
+from socket import error as socket_error
+from thread import Thread
 import time
 
 from config import settings
@@ -39,20 +40,18 @@ class Server(object):
             # receive data from clients
             try:
                 message = client.recv(settings.buffer_size)
-            # the client forcibly disconnected
-            except:
-                connected = False
 
-            # check if the client wants to disconnect
-            if message.decode(settings.encoding) == settings.disconnect:
-                connected = False
-                break
+                # check if the client wants to disconnect
+                if message.decode(settings.encoding) == settings.disconnect:
+                    connected = False
+                    break
 
-            # send data to all other clients
-            try:
+                # send data to all other clients
                 self.broadcast(message, name)
+
             # the client forcibly disconnected
-            except:
+            except socket_error as e:
+                print("Error: " + e)
                 connected = False
 
             time.sleep(1 / settings.tick_rate)
