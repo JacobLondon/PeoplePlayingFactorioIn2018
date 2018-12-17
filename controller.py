@@ -12,18 +12,10 @@ class Controller(object):
 
     def __init__(self, client_id):
 
-        # pygame tools
-        #pygame.init()
-        #pygame.font.init()
-        #self.display = pygame.display.set_mode((settings.display_size, settings.display_size))
-        #pygame.display.set_caption('PPFI18')
-        #pygame.display.update()
-        #self.clock = pygame.time.Clock()
+        # game tools
         self.ticking = True
         self.done = False
-
         self.interface = Interface()
-
         self.client = Client(client_id)
 
         # load players
@@ -44,7 +36,7 @@ class Controller(object):
         # [left, top, width, height]
         area = [settings.square_size * x, settings.square_size * y,
                 settings.square_size, settings.square_size]
-        pygame.draw.rect(self.display, color, area)
+        pygame.draw.rect(self.interface.display, color, area)
 
     def draw_sprite(self, sprite):
         self.draw_tile(sprite.loc[0], sprite.loc[1], sprite.color)
