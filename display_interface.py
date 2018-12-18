@@ -5,15 +5,18 @@ from constants import Color
 
 class Interface(object):
 
-    def __init__(self):
+    def __init__(self, window_text):
 
         # pygame tools
         pygame.init()
         pygame.font.init()
         self.display = pygame.display.set_mode((settings.display_size, settings.display_size))
-        pygame.display.set_caption('PPFI18')
+        pygame.display.set_caption(window_text)
         pygame.display.update()
         self.clock = pygame.time.Clock()
+
+    def close(self):
+        pygame.quit()
 
     # call to update the screen
     def update(self):

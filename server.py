@@ -61,7 +61,7 @@ class Server(object):
 
     # send binary data to all clients
     def broadcast(self, message, sender):
-
+        
         # send message to all other clients
         for client in self.clients:
             if self.clients[client] != sender:

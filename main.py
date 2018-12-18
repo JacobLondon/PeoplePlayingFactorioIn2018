@@ -1,18 +1,14 @@
-import sys
 
-from controller import Controller
+from game_controller import Game_Controller
 from sprite import Player
 from config import settings
+from display_interface import Interface
 
 def main():
 
-    # make a server/client interface depending on args
-    if len(sys.argv) > 1 and sys.argv[1] == '2':
-        client_id = 1
-    else:
-        client_id = 0
+    interface = Interface('PPFI18')
 
-    game = Controller()
+    game = Game_Controller(interface)
     game.run()
 
 if __name__ == '__main__':

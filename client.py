@@ -11,6 +11,7 @@ class Client(object):
         self.send = self.socket.send
         self.receive = self.socket.receive
         self.close = self.socket.close
+        self.handshake_close = self.socket.handshake_close
 
         # Get id from server
         self.id = int(self.receive())
