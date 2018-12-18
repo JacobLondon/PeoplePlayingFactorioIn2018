@@ -16,7 +16,8 @@ class Settings(object):
         self.refresh_rate = settings['refresh_rate']
         self.num_clients = settings['num_clients']
 
-        self.cooldown = settings['cooldown']        # cooldown in seconds for shooting
+        self.shoot_cooldown = settings['shoot_cooldown']    # cooldown in seconds for shooting
+        self.move_cooldown = settings['move_cooldown']      # cooldown in seconds for moving
         self.grid_size = settings['grid_size']      # number of grids wide/tall the game is
         self.square_size = settings['square_size']  # number of pixels wide/tall each grid is
         self.display_size = settings['grid_size'] * settings['square_size']

@@ -21,15 +21,20 @@ class Controller(object):
         # load players
         self.p1 = Player.create_playerone()
         self.p2 = Player.create_playertwo()
-        # the player changes depending on client or server
+
+        # the player id changes depending on client
         self.player = self.p1 if self.client.id == 0 else self.p2
 
-        self.missiles = []
         # hold the missiles until tick, then empty the buffer
+        self.missiles = []
         self.missile_buffer = []
+
         # object which stores the data for the state
         self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client.id)
         self.fire_ready = True
+        self.move_ready = True
+
+        self.key_presses = {pygame.K_LEFT:False, pygame.K_RIGHT:False, pygame.K_UP:False, pygame.K_DOWN:False}
 
     def draw_missiles(self):
 
@@ -46,7 +51,18 @@ class Controller(object):
 
             self.interface.draw_sprite(m)
 
+    def shoot_cooldown(self):
+        time.sleep(settings.shoot_cooldown)
+        self.fire_ready = True
+
+    def move_cooldown(self):
+        time.sleep(settings.move_cooldown)
+        self.move_ready = True
+
     def move(self, direction, player):
+
+        if not self.move_ready:
+            return
 
         # move left and bounds check
         if direction == Dir.left:
@@ -58,9 +74,8 @@ class Controller(object):
             if player.loc[0] + 1 < settings.grid_size:
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
-    def reload(self):
-        time.sleep(settings.cooldown)
-        self.fire_ready = True
+        self.move_ready = False
+        Thread(target=self.move_cooldown, args=()).start()
 
     def shoot(self, dir):
 
@@ -73,7 +88,7 @@ class Controller(object):
 
             # cannot fire again until the cooldown timer is done
             self.fire_ready = False
-            Thread(target=self.reload, args=()).start()
+            Thread(target=self.shoot_cooldown, args=()).start()
 
     def tick(self):
         while self.ticking:
@@ -149,10 +164,10 @@ class Controller(object):
 
             # traverse all events occurring that frame
             for event in pygame.event.get():
-                Thread(target=self.handle_event, args=(event,)).start()
-                break
+                self.handle_event(event)
 
-            # update screen/tick clock
+            # update presses and tick
+            self.key_actions()
             self.update()
 
         self.ticking = False
@@ -166,18 +181,24 @@ class Controller(object):
         if event.type == pygame.QUIT:
             self.done = True
 
-        #  player moves left
-        elif pygame.key.get_pressed()[pygame.K_LEFT] != 0:
+        # player starts doing actions
+        elif event.type == pygame.KEYDOWN:
+            self.key_presses[event.key] = True
+
+        # player stops doing actions
+        elif event.type == pygame.KEYUP:
+            self.key_presses[event.key] = False
+
+    # do actions based on what was pressed
+    def key_actions(self):
+        if self.key_presses[pygame.K_LEFT]:
             self.move(Dir.left, self.player)
 
-        #  player moves right
-        elif pygame.key.get_pressed()[pygame.K_RIGHT] != 0:
+        if self.key_presses[pygame.K_RIGHT]:
             self.move(Dir.right, self.player)
 
-        # player shoots up
-        elif pygame.key.get_pressed()[pygame.K_UP] != 0:
+        if self.key_presses[pygame.K_UP]:
             self.shoot(Dir.up)
 
-        # player shoots down
-        elif pygame.key.get_pressed()[pygame.K_DOWN] != 0:
+        if self.key_presses[pygame.K_DOWN]:
             self.shoot(Dir.down)
