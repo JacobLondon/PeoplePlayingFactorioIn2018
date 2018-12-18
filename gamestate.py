@@ -5,7 +5,7 @@ from sprite import Missile, Player
 # turn json string to object
 def _json_object_hook(d):
 
-    if all([key in d for key  in ['number', 'p1', 'p2', 'missile_buffer']]):
+    if all([key in d for key  in ['id', 'p1', 'p2', 'missile_buffer']]):
         #print(d)
         return State(**d)
 

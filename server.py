@@ -15,15 +15,16 @@ class Server(object):
     def await_clients(self):
 
         while True:
-            client, client_address = self.server.accept()
-            print("%s:%s has connected." % client_address)
-            client.send(1)
+            for num in [0, 1]:
+                client, client_address = self.server.accept()
+                print("%s:%s has connected." % client_address)
+                client.send(num)
 
-            # add client address to addresses array
-            self.addresses[client] = client_address
+                # add client address to addresses array
+                self.addresses[client] = client_address
 
-            # start thread for client
-            Thread(target=self.handle_client, args=(client,)).start()
+                # start thread for client
+                Thread(target=self.handle_client, args=(client,)).start()
 
     # handle data transmission for a given client
     def handle_client(self, client):
