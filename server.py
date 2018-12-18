@@ -1,9 +1,8 @@
-from socket import socket, AF_INET, SOCK_STREAM
-from socket import error as socket_error
-from thread import Thread
 import time
 
+from connection import Socket
 from config import settings
+from thread import Thread
 
 class Server(object):
 
@@ -18,6 +17,7 @@ class Server(object):
         while True:
             client, client_address = self.server.accept()
             print("%s:%s has connected." % client_address)
+            client.send(1)
 
             # add client address to addresses array
             self.addresses[client] = client_address
@@ -31,7 +31,7 @@ class Server(object):
         message = b''
 
         # add new client to array of client sockets
-        name = client.recv(settings.buffer_size).decode(settings.encoding)
+        name = client.receive()
         self.clients[client] = name
         connected = True
 
@@ -39,10 +39,10 @@ class Server(object):
 
             # receive data from clients
             try:
-                message = client.recv(settings.buffer_size)
+                message = client.receive()
 
                 # check if the client wants to disconnect
-                if message.decode(settings.encoding) == settings.disconnect:
+                if message == settings.disconnect:
                     connected = False
                     break
 
@@ -50,7 +50,7 @@ class Server(object):
                 self.broadcast(message, name)
 
             # the client forcibly disconnected
-            except socket_error as e:
+            except Socket.error as e:
                 print("Error: " + e)
                 connected = False
 
@@ -70,11 +70,8 @@ class Server(object):
 
     def run(self):
         # prepare server
-        self.server = socket(AF_INET, SOCK_STREAM)
-        self.server.bind(settings.server_address)
-
-        # listen for maximum connections made to the socket
-        self.server.listen(settings.num_clients)
+        self.server = Socket()
+        self.server.listenAsServer()
 
         # handle client connections in another thread
         connection_thread = Thread(target=self.await_clients)

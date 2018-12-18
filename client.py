@@ -1,27 +1,27 @@
-from socket import socket, AF_INET, SOCK_STREAM
-
+from connection import Socket
 from config import settings
 
 class Client(object):
 
-    def __init__(self, id):
-
-        self.id = id
+    def __init__(self):
 
         # create and connect socket
-        self.socket = socket(AF_INET, SOCK_STREAM)
-        self.socket.connect(settings.client_address)
+        self.socket = Socket()
+        self.socket.connectToServer()
+        self.send = self.socket.send
+        self.receive = self.socket.receive
+        self.close = self.socket.close
 
-        # give the server the client's name
-        self.send(str(self.id))
+        # Get id from server
+        self.id = int(self.receive())
 
+    '''
     def send(self, message):
-        self.socket.send(bytes(message, settings.encoding))
+        self.socket.send(message)
 
     def receive(self):
-        message = self.socket.recv(settings.buffer_size).decode(settings.encoding)
-        return message
+        return self.socket.receive()
 
     def close(self):
-        self.socket.send(bytes(settings.disconnect, settings.encoding))
         self.socket.close()
+    '''
