@@ -1,7 +1,7 @@
 import pygame
 
 from config import settings
-from constants import Color
+from constants import Color, Font
 
 class Interface(object):
 
@@ -37,3 +37,7 @@ class Interface(object):
     def clear(self):
         area = [0, 0, settings.display_size, settings.display_size]
         pygame.draw.rect(self.display, Color.background, area)
+
+    def draw_text(self, text, x, y, foreground, background):
+        text_surface = Font.arial.render(text, True, foreground, background)
+        self.display.blit(text_surface, (x, y))

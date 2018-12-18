@@ -30,6 +30,11 @@ class Game_Controller(Controller):
         self.fire_ready = True
         self.move_ready = True
 
+    def draw_background(self):
+        self.interface.draw_text("press esc 2 stop",
+            settings.display_size / 2, settings.display_size / 2,
+            Color.foreground, None)
+
     def draw_missiles(self):
 
         # update each missile
@@ -144,7 +149,7 @@ class Game_Controller(Controller):
 
     def open(self):
         from menu_controller import Menu_Controller
-        menu = Menu_Controller()
+        menu = Menu_Controller(self.interface)
         menu.run()
 
     # do actions based on what was pressed
@@ -160,3 +165,6 @@ class Game_Controller(Controller):
 
         if self.key_presses[pygame.K_DOWN]:
             self.shoot(Dir.down)
+
+        if self.key_presses[pygame.K_ESCAPE]:
+            self.done = True

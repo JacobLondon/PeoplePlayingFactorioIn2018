@@ -32,6 +32,7 @@ class Controller(object):
 
         # clear screen before drawing
         self.interface.clear()
+        self.draw_background()
 
         # draw and update controller items
         self.update_actions()
@@ -41,6 +42,9 @@ class Controller(object):
 
     # custom actions during update
     def update_actions(self):
+        pass
+
+    def draw_background(self):
         pass
 
     # do before the game loop
@@ -66,7 +70,7 @@ class Controller(object):
     # give the controller to run when the current closes
     def open(self):
 
-        # by default, force close the program
+        # by default, close the program
         self.interface.close()
 
     def run(self):
