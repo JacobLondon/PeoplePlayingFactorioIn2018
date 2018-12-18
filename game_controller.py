@@ -1,4 +1,4 @@
-import pygame, time, copy
+import pygame, time, copy, sys
 
 from thread import Thread
 from sprite import Player, Missile
@@ -141,6 +141,11 @@ class Game_Controller(Controller):
 
     def close_actions(self):
         self.client.handshake_close()
+
+    def open(self):
+        from menu_controller import Menu_Controller
+        menu = Menu_Controller()
+        menu.run()
 
     # do actions based on what was pressed
     def key_actions(self):

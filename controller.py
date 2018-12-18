@@ -10,20 +10,24 @@ class Controller(object):
 
         self.ticking = True
         self.done = False
+        self.quit = False
         self.interface = interface
         interface.clear()
 
         self.key_presses = defaultdict(lambda: False)
         self.tick_thread = Thread(target=self.tick, args=())
 
+    # thread handling ticking
     def tick(self):
         while self.ticking:
             self.tick_actions()
             time.sleep(1 / settings.tick_rate)
 
+    # custom actions during tick
     def tick_actions(self):
         pass
 
+    # do on every frame
     def update(self):
 
         # clear screen before drawing
@@ -35,9 +39,11 @@ class Controller(object):
         # pygame update
         self.interface.update()
 
+    # custom actions during update
     def update_actions(self):
         pass
 
+    # do before the game loop
     def setup(self):
         pass
 
@@ -46,11 +52,22 @@ class Controller(object):
         self.ticking = False
         self.tick_thread.join()
         self.close_actions()
-        self.interface.close()
+
+        # shutdown the program or open the parent container
+        if self.quit:
+            self.interface.close()
+        else:
+            self.open()
 
     # the controller will be closed
     def close_actions(self):
         pass
+
+    # give the controller to run when the current closes
+    def open(self):
+
+        # by default, force close the program
+        self.interface.close()
 
     def run(self):
 
@@ -71,6 +88,7 @@ class Controller(object):
         # top right corner X
         if event.type == pygame.QUIT:
             self.done = True
+            self.quit = True
 
         # player starts doing actions
         elif event.type == pygame.KEYDOWN:
