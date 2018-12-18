@@ -38,7 +38,6 @@ class Server(object):
 
         try:
             while connected:
-                print(threading.active_count())
                 # receive data from clients
                 message = client.receive()
 
