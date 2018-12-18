@@ -12,7 +12,7 @@ def main():
     else:
         client_id = 0
 
-    game = Controller(client_id)
+    game = Controller()
     game.run()
 
 if __name__ == '__main__':

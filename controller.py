@@ -10,13 +10,13 @@ from display_interface import Interface
 
 class Controller(object):
 
-    def __init__(self, client_id):
+    def __init__(self):
 
         # game tools
         self.ticking = True
         self.done = False
         self.interface = Interface()
-        self.client = Client(client_id)
+        self.client = Client()
 
         # load players
         self.p1 = Player.create_playerone()
