@@ -10,14 +10,12 @@ class Sprite(object):
 
 class Player(Sprite):
 
-    def __init__(self, number=0):
-        Sprite.__init__(self, color=Color.blue)
-        self.number = number
+    def __init__(self, color=Color.blue, loc=(0,0)):
+        Sprite.__init__(self, color=color, loc=loc)
 
     @staticmethod
     def create_playerone():
         player = Player()
-        player.number = 0
         player.color = Color.red
         player.loc = (settings.grid_size / 2, settings.grid_size - 1)
         return player
@@ -25,7 +23,6 @@ class Player(Sprite):
     @staticmethod
     def create_playertwo():
         player = Player()
-        player.number = 1
         player.color = Color.blue
         player.loc = (settings.grid_size / 2, 0)
         return player

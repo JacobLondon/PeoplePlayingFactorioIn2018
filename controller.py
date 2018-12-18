@@ -30,7 +30,7 @@ class Controller(object):
         self.missile_buffer = []
 
         # object which stores the data for the state
-        self.gamestate = State(self.p1.loc, self.p2.loc, self.missiles, self.client.id)
+        self.gamestate = State(self.p1, self.p2, self.missiles, self.client.id)
         self.fire_ready = True
         self.move_ready = True
 
@@ -126,17 +126,17 @@ class Controller(object):
             return
 
         # player cannot receive their own missiles
-        if self.player.number != received_state.number:
+        if self.client.id != received_state.id:
 
             # load the new missiles
             for m in received_state.missile_buffer:
                 self.missiles.append(m)
 
         # set pos of the other player
-        if self.player.number == 0:
-            self.p2.loc = received_state.p2_loc
+        if self.client.id == 0:
+            self.p2 = received_state.p2
         else:
-            self.p1.loc = received_state.p1_loc
+            self.p1 = received_state.p1
 
     def update(self):
 
@@ -149,7 +149,7 @@ class Controller(object):
         self.interface.draw_sprite(self.p2)
 
         # set gamestate
-        self.gamestate.set_state(self.p1.loc, self.p2.loc, self.missile_buffer)
+        self.gamestate.set_state(self.p1, self.p2, self.missile_buffer)
 
         # pygame update
         self.interface.update()
