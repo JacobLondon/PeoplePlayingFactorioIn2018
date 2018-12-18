@@ -36,10 +36,10 @@ class Server(object):
         self.clients[client] = name
         connected = True
 
-        while connected:
+        try:
+            while connected:
 
-            # receive data from clients
-            try:
+                # receive data from clients
                 message = client.receive()
 
                 # check if the client wants to disconnect
@@ -49,17 +49,16 @@ class Server(object):
 
                 # send data to all other clients
                 self.broadcast(message, name)
+                time.sleep(1 / settings.tick_rate)
 
-            # the client forcibly disconnected
-            except Socket.error as e:
-                print("Error: " + e)
-                connected = False
+        # the client forcibly disconnected
+        except Socket.error as e:
+            pass
 
-            time.sleep(1 / settings.tick_rate)
-
-        client.close()
-        print("%s:%s has disconnected." % self.addresses[client])
-        del self.clients[client]
+        finally:
+            client.close()
+            print("%s:%s has disconnected." % self.addresses[client])
+            del self.clients[client]
 
     # send binary data to all clients
     def broadcast(self, message, sender):
@@ -69,10 +68,10 @@ class Server(object):
             if self.clients[client] != sender:
                 client.send(message)
 
+    # prepare server
     def run(self):
-        # prepare server
         self.server = Socket()
-        self.server.listenAsServer()
+        self.server.listen_as_server()
 
         # handle client connections in another thread
         connection_thread = Thread(target=self.await_clients)

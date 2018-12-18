@@ -6,19 +6,15 @@ from sprite import Missile, Player
 def _json_object_hook(d):
 
     if all([key in d for key  in ['id', 'p1', 'p2', 'missile_buffer']]):
-        #print(d)
         return State(**d)
 
     elif all([key in d for key in ['color', 'loc', 'dir']]):
         return Missile(**d)
 
     elif all([key in d for key in ['color', 'loc']]):
-        #print("Player", d)
         return Player(**d)
 
 def json_to_obj(data):
-
-    print(data)
     try:
         obj = json.loads(data, object_hook=_json_object_hook)
     except:

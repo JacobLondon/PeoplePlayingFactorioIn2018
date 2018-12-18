@@ -13,10 +13,10 @@ class Socket():
         else:
             self.socket = socket
 
-    def connectToServer(self):
+    def connect_to_server(self):
         self.socket.connect(settings.client_address)
 
-    def listenAsServer(self):
+    def listen_as_server(self):
         self.socket.bind(settings.server_address)
         self.socket.listen(settings.num_clients)
 
@@ -29,8 +29,11 @@ class Socket():
         print("recving %s" % recv)
         return recv
 
-    def close(self):
+    def handshake_close(self):
         self.send(settings.disconnect)
+        self.close()
+
+    def close(self):
         self.socket.close()
 
     def accept(self):

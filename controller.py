@@ -1,6 +1,6 @@
 import pygame, time, copy
-from threading import Thread
 
+from thread import Thread
 from sprite import Player, Missile
 from client import Client
 from gamestate import State, json_to_obj
