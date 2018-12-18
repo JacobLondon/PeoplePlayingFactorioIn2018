@@ -1,5 +1,5 @@
 {
-    "client_ip": "127.0.0.1",
+    "client_ip": "10.0.1.28",
     "server_ip": "",
     "port": 5678,
     "buffer_size": 4096,

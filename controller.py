@@ -82,7 +82,7 @@ class Controller(object):
         # make a missile player and put it in the missile list
         if self.fire_ready:
             missile = Missile(dir=dir)
-            missile.loc = (self.player.loc[0], self.player.loc[1] + missile.dir)
+            missile.loc = (self.player.loc[0], self.player.loc[1])
             self.missiles.append(missile)
             self.missile_buffer.append(copy.deepcopy(missile))
 
