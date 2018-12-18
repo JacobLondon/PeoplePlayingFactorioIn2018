@@ -122,7 +122,7 @@ class Controller(object):
 
         # convert json to object if there is data
         received_state = json_to_obj(received_data)
-        if received_state == None:
+        if received_state is None:
             return
 
         # player cannot receive their own missiles

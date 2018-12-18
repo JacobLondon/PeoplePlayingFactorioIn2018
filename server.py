@@ -1,4 +1,4 @@
-import time
+import time, threading
 
 from connection import Socket
 from config import settings
@@ -15,7 +15,7 @@ class Server(object):
     def await_clients(self):
 
         while True:
-            for num in [0, 1]:
+            for num in range(settings.num_players):
                 client, client_address = self.server.accept()
                 print("%s:%s has connected." % client_address)
                 client.send(num)
@@ -38,7 +38,7 @@ class Server(object):
 
         try:
             while connected:
-
+                print(threading.active_count())
                 # receive data from clients
                 message = client.receive()
 
@@ -73,13 +73,11 @@ class Server(object):
         self.server = Socket()
         self.server.listen_as_server()
 
-        # handle client connections in another thread
-        connection_thread = Thread(target=self.await_clients)
-        connection_thread.start()
+        # await for clients to connect
         print('Server Started')
+        self.await_clients()
 
         # server shutdown
-        connection_thread.join()
         self.server.close()
 
 if __name__ == '__main__':

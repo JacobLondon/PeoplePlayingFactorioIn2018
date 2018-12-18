@@ -9,6 +9,7 @@
     "refresh_rate": 60,
     "num_clients": 4,
 
+    "num_players": 2,
     "shoot_cooldown": 0.1,
     "move_cooldown": 0.017,
     "grid_size": 40,
