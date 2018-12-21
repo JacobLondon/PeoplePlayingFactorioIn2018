@@ -5,8 +5,10 @@ from sprite import Player, Missile
 from client import Client
 from gamestate import State, json_to_obj
 from config import settings
-from constants import Color, Dir
+from constants import Color, Dir, Anchor
 from controller import Controller
+from label import Label
+from layout import Relative
 
 class Game_Controller(Controller):
 
@@ -30,10 +32,14 @@ class Game_Controller(Controller):
         self.fire_ready = True
         self.move_ready = True
 
-    def draw_background(self):
-        self.interface.draw_text("press esc 2 stop",
-            settings.display_size / 2, settings.display_size / 2,
-            Color.foreground, None)
+    def initialize_components(self):
+
+        self.title_label = Label(self.interface, 'Press esc to stop')
+        self.title_label.loc = Relative.center
+        self.title_label.anchor = Anchor.center
+
+    def update_components(self):
+        self.title_label.refresh()
 
     def draw_missiles(self):
 
@@ -41,7 +47,7 @@ class Game_Controller(Controller):
         for m in self.missiles:
 
             # update to next pos
-            m.loc = (m.loc[0], m.loc[1] + m.dir)
+            m.loc = (m.loc[0], m.loc[1] + m.dir / settings.missile_vel)
 
             # remove if it went off the screen
             if m.loc[1] < 0 or m.loc[1] > settings.grid_size:
@@ -147,7 +153,7 @@ class Game_Controller(Controller):
     def close_actions(self):
         self.client.handshake_close()
 
-    def open(self):
+    def open_on_close(self):
         from menu_controller import Menu_Controller
         menu = Menu_Controller(self.interface)
         menu.run()

@@ -20,4 +20,12 @@ class Dir(object):
 
 class Font(object):
     pygame.font.init()
-    arial = pygame.font.SysFont('Arial', 60)
+    standard = pygame.font.SysFont('Arial', 20)
+    menu = pygame.font.SysFont('Arial', 60)
+
+class Anchor(object):
+    northwest = 0
+    northeast = 1
+    southeast = 2
+    southwest = 3
+    center = 4

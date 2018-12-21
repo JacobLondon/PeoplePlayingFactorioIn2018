@@ -2,19 +2,28 @@ import pygame
 
 from controller import Controller
 from config import settings
-from constants import Color, Font
+from constants import Color, Font, Anchor
+from label import Label
+from layout import Grid
 
 class Menu_Controller(Controller):
 
     def __init__(self, interface):
         Controller.__init__(self, interface)
 
-    def draw_background(self):
-        self.interface.draw_text("press enter 2 plai",
-            settings.display_size / 2, settings.display_size / 2,
-            Color.foreground, None)
+    def initialize_components(self):
+        
+        self.title_layout = Grid(2, 2)
 
-    def open(self):
+        self.title_label = Label(self.interface, 'Press enter to play')
+        self.title_label.loc = self.title_layout.get_pixel(2, 2)
+        self.title_label.anchor = Anchor.center
+        self.title_label.font = Font.menu
+
+    def update_components(self):
+        self.title_label.refresh()
+
+    def open_on_close(self):
         from game_controller import Game_Controller
         game = Game_Controller(self.interface)
         game.run()

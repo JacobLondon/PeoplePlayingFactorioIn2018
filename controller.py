@@ -6,16 +6,24 @@ from config import settings
 
 class Controller(object):
 
-    def __init__(self, interface):
+    def __init__(self, interface, clear=True):
 
         self.ticking = True
         self.done = False
         self.quit = False
         self.interface = interface
-        interface.clear()
+        if clear:
+            interface.clear()
 
         self.key_presses = defaultdict(lambda: False)
+        self.mouse_presses = defaultdict(lambda: False)
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+
         self.tick_thread = Thread(target=self.tick, args=())
+        self.initialize_components()
+
+    def initialize_components(self):
+        pass
 
     # thread handling ticking
     def tick(self):
@@ -34,17 +42,25 @@ class Controller(object):
         self.interface.clear()
         self.draw_background()
 
+        # custom component updates
+        self.update_components()
+
         # draw and update controller items
         self.update_actions()
 
         # pygame update
         self.interface.update()
 
-    # custom actions during update
-    def update_actions(self):
+    # draw things behind all items
+    def draw_background(self):
         pass
 
-    def draw_background(self):
+    # refresh/update components
+    def update_components(self):
+        pass
+
+    # custom actions during update
+    def update_actions(self):
         pass
 
     # do before the game loop
@@ -61,14 +77,14 @@ class Controller(object):
         if self.quit:
             self.interface.close()
         else:
-            self.open()
+            self.open_on_close()
 
     # the controller will be closed
     def close_actions(self):
         pass
 
-    # give the controller to run when the current closes
-    def open(self):
+    # give the controller to run when the current one closes
+    def open_on_close(self):
 
         # by default, close the program
         self.interface.close()
@@ -78,12 +94,13 @@ class Controller(object):
         self.setup()
         self.tick_thread.start()
 
+        # game loop for controller
         while not self.done:
             for event in pygame.event.get():
                 self.handle_event(event)
 
             self.key_actions()
-            self.update()
+            Thread(target=self.update, args=()).start()
 
         self.close()
 
@@ -101,6 +118,18 @@ class Controller(object):
         # player stops doing actions
         elif event.type == pygame.KEYUP:
             self.key_presses[event.key] = False
+
+        # mouse starts clicking/scrolling
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.mouse_presses[event.button] = True
+
+        # mouse stops clicking/scrolling
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.mouse_presses[event.button] = False
+
+        # mouse moves
+        if event.type == pygame.MOUSEMOTION:
+            self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
     # do actions based on what was pressed
     def key_actions(self):
