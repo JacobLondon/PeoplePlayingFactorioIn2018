@@ -12,6 +12,8 @@ class Component(object):
         self.anchored_loc = (0, 0)
         self.width = 0
         self.height = 0
+        self.visible = True
+        self.focused = False
         self.container = []
 
         self.text = ''
@@ -22,7 +24,6 @@ class Component(object):
 
     # set the relative location determined by the anchor used
     def set_anchor(self):
-        self.width, self.height = self.font.size(self.text)
 
         if self.anchor == Anchor.northwest:
             self.anchored_loc = self.loc
@@ -35,7 +36,17 @@ class Component(object):
         elif self.anchor == Anchor.center:
             self.anchored_loc = (self.loc[0] - self.width / 2, self.loc[1] - self.height / 2)
 
+    def refresh(self):
+        pass
+
+    def draw_component(self):
+        pass
+
     # determine if the coordinates are inside of a given component
     def in_component(self, x, y):
-        return all(self.anchored_loc[0] <= x <= self.anchored_loc[0] + self.width,
-                   self.anchored_loc[1] <= y <= self.anchored_loc[1] + self.height)
+        left =self.anchored_loc[0]
+        right = self.anchored_loc[0] + self.width
+        top = self.anchored_loc[1]
+        bottom = elf.anchored_loc[1] + self.height
+
+        return left <= x <= right and top <= y <= bottom

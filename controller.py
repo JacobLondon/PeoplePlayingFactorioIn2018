@@ -100,6 +100,8 @@ class Controller(object):
                 self.handle_event(event)
 
             self.key_actions()
+            self.mouse_actions()
+            self.component_actions()
             Thread(target=self.update, args=()).start()
 
         self.close()
@@ -133,4 +135,11 @@ class Controller(object):
 
     # do actions based on what was pressed
     def key_actions(self):
+        pass
+
+    def mouse_actions(self):
+        pass
+
+    # actions for components
+    def component_actions(self):
         pass

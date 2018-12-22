@@ -33,6 +33,11 @@ class Interface(object):
     def draw_sprite(self, sprite):
         self.draw_tile(sprite.loc[0], sprite.loc[1], sprite.color)
 
+    # draw a given area
+    def draw_area(self, x, y, width, height, color):
+        area = [x, y, width, height]
+        pygame.draw.rect(self.display, color, area)
+
     # set the screen to background color
     def clear(self):
         area = [0, 0, settings.display_size, settings.display_size]

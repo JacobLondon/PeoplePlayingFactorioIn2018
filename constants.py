@@ -11,6 +11,9 @@ class Color(object):
     background = black
     foreground = white
 
+    button = (130,130,130)
+    hover = (200,200,255)
+
 class Dir(object):
 
     right = 2
@@ -20,8 +23,9 @@ class Dir(object):
 
 class Font(object):
     pygame.font.init()
-    standard = pygame.font.SysFont('Arial', 20)
-    menu = pygame.font.SysFont('Arial', 60)
+    standard = pygame.font.SysFont('Sans MS', 20)
+    menu = pygame.font.SysFont('Sans MS', 60)
+    button = pygame.font.SysFont('Sans MS', 40)
 
 class Anchor(object):
     northwest = 0
@@ -29,3 +33,10 @@ class Anchor(object):
     southeast = 2
     southwest = 3
     center = 4
+
+class Mouse(object):
+    l_click = 1
+    m_click = 2
+    r_click = 3
+    s_up = 4
+    s_down = 5
