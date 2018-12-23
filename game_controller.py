@@ -12,16 +12,20 @@ from layout import Relative
 
 class Game_Controller(Controller):
 
-    def __init__(self, interface):
+    def __init__(self, interface, self_ref=None):
         Controller.__init__(self, interface)
-        self.client = Client()
+
+        # a prev game was passed in, so use it instead
+        if self_ref is not None:
+            self = self_ref
+            return
+
+        else:
+            self.client = Client()
 
         # load players
         self.p1 = Player.create_playerone()
         self.p2 = Player.create_playertwo()
-
-        # the player id changes depending on client
-        self.player = self.p1 if self.client.id == 0 else self.p2
 
         # hold the missiles until tick, then empty the buffer
         self.missiles = []
@@ -29,12 +33,17 @@ class Game_Controller(Controller):
 
         # object which stores the data for the state
         self.gamestate = State(self.p1, self.p2, self.missiles, self.client.id)
+
+        # the player id changes depending on client
+        self.player = self.p1 if self.client.id == 0 else self.p2
+
         self.fire_ready = True
         self.move_ready = True
+        self.paused = False
 
     def initialize_components(self):
 
-        self.title_label = Label(self.interface, 'Press esc to stop')
+        self.title_label = Label(self.interface, 'Press esc to pause')
         self.title_label.loc = Relative.center
         self.title_label.anchor = Anchor.center
 
@@ -154,9 +163,13 @@ class Game_Controller(Controller):
         self.client.handshake_close()
 
     def open_on_close(self):
-        from menu_controller import Menu_Controller
-        menu = Menu_Controller(self.interface)
-        menu.run()
+
+        if self.paused:
+            from pause_controller import Pause_Controller
+            return Pause_Controller(self.interface, self)
+        else:
+            from menu_controller import Menu_Controller
+            return Menu_Controller(self.interface)
 
     # do actions based on what was pressed
     def key_actions(self):
@@ -173,4 +186,5 @@ class Game_Controller(Controller):
             self.shoot(Dir.down)
 
         if self.key_presses[pygame.K_ESCAPE]:
+            self.paused = True
             self.done = True

@@ -35,11 +35,14 @@ class Controller(object):
     def tick_actions(self):
         pass
 
+    def clear(self):
+        self.interface.clear()
+
     # do on every frame
     def update(self):
 
         # clear screen before drawing
-        self.interface.clear()
+        self.clear()
         self.draw_background()
 
         # custom component updates
@@ -76,8 +79,9 @@ class Controller(object):
         # shutdown the program or open the parent container
         if self.quit:
             self.interface.close()
+            return None
         else:
-            self.open_on_close()
+            return self.open_on_close()
 
     # the controller will be closed
     def close_actions(self):
@@ -88,6 +92,7 @@ class Controller(object):
 
         # by default, close the program
         self.interface.close()
+        return None
 
     def run(self):
 
@@ -104,7 +109,7 @@ class Controller(object):
             self.component_actions()
             Thread(target=self.update, args=()).start()
 
-        self.close()
+        return self.close()
 
     def handle_event(self, event):
 

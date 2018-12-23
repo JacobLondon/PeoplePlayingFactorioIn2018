@@ -6,9 +6,11 @@ from config import settings
 def main():
 
     interface = Interface('PPFI18')
+    controller = Menu_Controller(interface)
 
-    menu = Menu_Controller(interface)
-    menu.run()
+    # run controllers until close
+    while controller is not None:
+        controller = controller.run()
 
 if __name__ == '__main__':
     main()

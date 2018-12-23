@@ -31,8 +31,7 @@ class Menu_Controller(Controller):
 
     def open_on_close(self):
         from game_controller import Game_Controller
-        game = Game_Controller(self.interface)
-        game.run()
+        return Game_Controller(self.interface)
 
     # do actions based on what was pressed
     def key_actions(self):

@@ -11,6 +11,8 @@ class Color(object):
     background = black
     foreground = white
 
+    pause = (67, 85, 123)
+
     button = (130,130,130)
     hover = (200,200,255)
 
@@ -24,6 +26,7 @@ class Dir(object):
 class Font(object):
     pygame.font.init()
     standard = pygame.font.SysFont('Sans MS', 20)
+    large = pygame.font.SysFont('Sans MS', 40)
     menu = pygame.font.SysFont('Sans MS', 60)
     button = pygame.font.SysFont('Sans MS', 40)
 
