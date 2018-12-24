@@ -37,12 +37,11 @@ class Game_Controller(Controller):
 
     def initialize_components(self):
 
-        self.inst_label = Label(self.interface, 'Press esc to pause')
-        self.inst_label.loc = Relative.center
-        self.inst_label.anchor = Anchor.center
+        self.center_label = Label(self.interface, 'Press esc to pause')
+        self.center_label.loc = Relative.center
+        self.center_label.anchor = Anchor.center
 
         self.pause_layout = Grid(8, 8)
-
         self.pause_label = Label(self.interface, 'Paused')
         self.pause_label.loc = self.pause_layout.get_pixel(8, 1)
         self.pause_label.font = Font.large
@@ -50,7 +49,7 @@ class Game_Controller(Controller):
         self.pause_label.visible = False
 
     def update_components(self):
-        self.inst_label.refresh()
+        self.center_label.refresh()
         self.pause_label.visible = self.paused
         self.pause_label.refresh()
 

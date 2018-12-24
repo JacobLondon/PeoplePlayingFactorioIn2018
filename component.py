@@ -44,7 +44,7 @@ class Component(object):
 
     # determine if the coordinates are inside of a given component
     def in_component(self, x, y):
-        left =self.anchored_loc[0]
+        left = self.anchored_loc[0]
         right = self.anchored_loc[0] + self.width
         top = self.anchored_loc[1]
         bottom = elf.anchored_loc[1] + self.height
