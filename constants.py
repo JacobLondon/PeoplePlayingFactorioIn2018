@@ -41,5 +41,5 @@ class Mouse(object):
     l_click = 1
     m_click = 2
     r_click = 3
-    s_up = 4
-    s_down = 5
+    scroll_up = 4
+    scroll_down = 5

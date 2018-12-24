@@ -3,14 +3,18 @@ from collections import defaultdict
 
 from thread import Thread
 from config import settings
+from constants import Mouse
 
 class Controller(object):
 
     def __init__(self, interface, clear=True):
 
-        self.ticking = True
-        self.done = False
-        self.quit = False
+        self.ticking = True     # ticking separate from framerate
+        self.done = False       # controller looping
+        self.quit = False       # close and return controller
+        self.typing = False     # user is typing text
+        self.typed_text = ''    # the text the user is typing
+
         self.interface = interface
         if clear:
             interface.clear()
@@ -20,7 +24,6 @@ class Controller(object):
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         self.tick_thread = Thread(target=self.tick, args=())
-        self.initialize_components()
 
     def initialize_components(self):
         pass
@@ -96,6 +99,7 @@ class Controller(object):
 
     def run(self):
 
+        self.initialize_components()
         self.setup()
         self.tick_thread.start()
 
@@ -118,6 +122,13 @@ class Controller(object):
             self.done = True
             self.quit = True
 
+        # control user text input
+        elif self.typing and event.type == pygame.KEYDOWN:
+            if self.key_presses[pygame.K_BACKSPACE]:
+                self.typed_text = self.typed_text[:-1]
+            else:
+                self.typed_text += pygame.key.name(event.key)
+
         # player starts doing actions
         elif event.type == pygame.KEYDOWN:
             self.key_presses[event.key] = True
@@ -138,13 +149,57 @@ class Controller(object):
         if event.type == pygame.MOUSEMOTION:
             self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
-    # do actions based on what was pressed
-    def key_actions(self):
+    # actions for components
+    def component_actions(self):
         pass
 
     def mouse_actions(self):
+        if self.mouse_presses[Mouse.l_click]:
+            self.l_click_down()
+        if self.mouse_presses[Mouse.m_click]:
+            self.m_click_down()
+        if self.mouse_presses[Mouse.r_click]:
+            self.r_click_down()
+        if self.mouse_presses[Mouse.scroll_up]:
+            self.scroll_up()
+        if self.mouse_presses[Mouse.scroll_down]:
+            self.scroll_down()
+
+    def l_click_down(self):
+        pass
+    def m_click_down(self):
+        pass
+    def r_click_down(self):
+        pass
+    def scroll_up(self):
+        pass
+    def scroll_down(self):
         pass
 
-    # actions for components
-    def component_actions(self):
+    # do actions based on what was pressed
+    def key_actions(self):
+        if self.key_presses[pygame.K_RETURN]:
+            self.return_keydown()
+        if self.key_presses[pygame.K_ESCAPE]:
+            self.escape_keydown()
+        if self.key_presses[pygame.K_LEFT]:
+            self.left_keydown()
+        if self.key_presses[pygame.K_RIGHT]:
+            self.right_keydown()
+        if self.key_presses[pygame.K_UP]:
+            self.up_keydown()
+        if self.key_presses[pygame.K_DOWN]:
+            self.down_keydown()
+
+    def return_keydown(self):
+        pass
+    def escape_keydown(self):
+        pass
+    def left_keydown(self):
+        pass
+    def right_keydown(self):
+        pass
+    def up_keydown(self):
+        pass
+    def down_keydown(self):
         pass

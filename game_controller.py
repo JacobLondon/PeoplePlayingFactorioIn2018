@@ -5,23 +5,17 @@ from sprite import Player, Missile
 from client import Client
 from gamestate import State, json_to_obj
 from config import settings
-from constants import Color, Dir, Anchor
+from constants import Color, Dir, Anchor, Font
 from controller import Controller
 from label import Label
-from layout import Relative
+from layout import Relative, Grid
 
 class Game_Controller(Controller):
 
-    def __init__(self, interface, self_ref=None):
+    def __init__(self, interface):
         Controller.__init__(self, interface)
 
-        # a prev game was passed in, so use it instead
-        if self_ref is not None:
-            self = self_ref
-            return
-
-        else:
-            self.client = Client()
+        self.client = Client()
 
         # load players
         self.p1 = Player.create_playerone()
@@ -43,12 +37,22 @@ class Game_Controller(Controller):
 
     def initialize_components(self):
 
-        self.title_label = Label(self.interface, 'Press esc to pause')
-        self.title_label.loc = Relative.center
-        self.title_label.anchor = Anchor.center
+        self.inst_label = Label(self.interface, 'Press esc to pause')
+        self.inst_label.loc = Relative.center
+        self.inst_label.anchor = Anchor.center
+
+        self.pause_layout = Grid(8, 8)
+
+        self.pause_label = Label(self.interface, 'Paused')
+        self.pause_label.loc = self.pause_layout.get_pixel(8, 1)
+        self.pause_label.font = Font.large
+        self.pause_label.background = Color.pause
+        self.pause_label.visible = False
 
     def update_components(self):
-        self.title_label.refresh()
+        self.inst_label.refresh()
+        self.pause_label.visible = self.paused
+        self.pause_label.refresh()
 
     def draw_missiles(self):
 
@@ -76,7 +80,8 @@ class Game_Controller(Controller):
 
     def move(self, direction, player):
 
-        if not self.move_ready:
+        # only move if cooldown and not paused
+        if not self.move_ready or self.paused:
             return
 
         # move left and bounds check
@@ -94,16 +99,19 @@ class Game_Controller(Controller):
 
     def shoot(self, dir):
 
-        # make a missile player and put it in the missile list
-        if self.fire_ready:
-            missile = Missile(dir=dir)
-            missile.loc = (self.player.loc[0], self.player.loc[1])
-            self.missiles.append(missile)
-            self.missile_buffer.append(copy.deepcopy(missile))
+        # onlly shoot if cooldown and not paused
+        if not self.fire_ready or self.paused:
+            return
 
-            # cannot fire again until the cooldown timer is done
-            self.fire_ready = False
-            Thread(target=self.shoot_cooldown, args=()).start()
+        # make a missile player and put it in the missile list
+        missile = Missile(dir=dir)
+        missile.loc = (self.player.loc[0], self.player.loc[1])
+        self.missiles.append(missile)
+        self.missile_buffer.append(copy.deepcopy(missile))
+
+        # cannot fire again until the cooldown timer is done
+        self.fire_ready = False
+        Thread(target=self.shoot_cooldown, args=()).start()
 
     def send(self):
 
@@ -163,28 +171,21 @@ class Game_Controller(Controller):
         self.client.handshake_close()
 
     def open_on_close(self):
+        from menu_controller import Menu_Controller
+        return Menu_Controller(self.interface)
 
-        if self.paused:
-            from pause_controller import Pause_Controller
-            return Pause_Controller(self.interface, self)
-        else:
-            from menu_controller import Menu_Controller
-            return Menu_Controller(self.interface)
+    def escape_keydown(self):
+        self.paused = not self.paused
+        self.key_presses[pygame.K_ESCAPE] = False
 
-    # do actions based on what was pressed
-    def key_actions(self):
-        if self.key_presses[pygame.K_LEFT]:
-            self.move(Dir.left, self.player)
+    def left_keydown(self):
+        self.move(Dir.left, self.player)
 
-        if self.key_presses[pygame.K_RIGHT]:
-            self.move(Dir.right, self.player)
+    def right_keydown(self):
+        self.move(Dir.right, self.player)
 
-        if self.key_presses[pygame.K_UP]:
-            self.shoot(Dir.up)
+    def up_keydown(self):
+        self.shoot(Dir.up)
 
-        if self.key_presses[pygame.K_DOWN]:
-            self.shoot(Dir.down)
-
-        if self.key_presses[pygame.K_ESCAPE]:
-            self.paused = True
-            self.done = True
+    def down_keydown(self):
+        self.shoot(Dir.down)

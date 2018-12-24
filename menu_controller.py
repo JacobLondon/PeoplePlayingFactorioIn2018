@@ -2,7 +2,7 @@ import pygame
 
 from controller import Controller
 from config import settings
-from constants import Color, Font, Anchor, Mouse
+from constants import Color, Font, Anchor
 from label import Label
 from button import Button
 from layout import Grid
@@ -33,13 +33,11 @@ class Menu_Controller(Controller):
         from game_controller import Game_Controller
         return Game_Controller(self.interface)
 
-    # do actions based on what was pressed
-    def key_actions(self):
-        if self.key_presses[pygame.K_RETURN]:
-            self.done = True
+    def return_keydown(self):
+        self.start_button_clicked()
 
-    def mouse_actions(self):
-        if self.mouse_presses[Mouse.l_click] and self.start_button.focused:
+    def l_click_down(self):
+        if self.start_button.focused:
             self.start_button_clicked()
 
     def start_button_clicked(self):
