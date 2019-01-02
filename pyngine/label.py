@@ -1,6 +1,6 @@
 
-from constants import Color, Font, Anchor
-from component import Component
+from pyngine.constants import Color, Font, Anchor
+from pyngine.component import Component
 
 class Label(Component):
 
@@ -19,7 +19,7 @@ class Label(Component):
         self.draw_component()
 
     def draw_component(self):
-        
+
         # draw the text in the component
         self.text_surface = self.font.render(self.text, True, self.foreground, self.background)
         self.interface.display.blit(self.text_surface, self.anchored_loc)

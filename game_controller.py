@@ -1,19 +1,20 @@
 import pygame, time, copy, sys
 
+from pyngine.constants import Color, Dir, Anchor, Font
+from pyngine.controller import Controller
+from pyngine.label import Label
+from pyngine.layout import Relative, Grid
+
 from thread import Thread
 from sprite import Player, Missile
 from client import Client
 from gamestate import State, json_to_obj
 from config import settings
-from constants import Color, Dir, Anchor, Font
-from controller import Controller
-from label import Label
-from layout import Relative, Grid
 
 class Game_Controller(Controller):
 
     def __init__(self, interface):
-        Controller.__init__(self, interface)
+        Controller.__init__(self, interface, settings.tick_rate)
 
         self.client = Client()
 
@@ -37,11 +38,12 @@ class Game_Controller(Controller):
 
     def initialize_components(self):
 
+        self.center_layout = Relative(self.background_panel)
         self.center_label = Label(self.interface, 'Press esc to pause')
-        self.center_label.loc = Relative.center
+        self.center_label.loc = self.center_layout.center
         self.center_label.anchor = Anchor.center
 
-        self.pause_layout = Grid(8, 8)
+        self.pause_layout = Grid(self.background_panel, 8, 8)
         self.pause_label = Label(self.interface, 'Paused')
         self.pause_label.loc = self.pause_layout.get_pixel(8, 1)
         self.pause_label.font = Font.large

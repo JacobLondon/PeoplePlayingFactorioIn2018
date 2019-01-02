@@ -1,5 +1,5 @@
 
-from constants import Color, Dir
+from pyngine.constants import Color, Dir
 from config import settings
 
 class Sprite(object):

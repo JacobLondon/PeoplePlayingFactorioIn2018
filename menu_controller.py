@@ -1,11 +1,12 @@
 import pygame
 
-from controller import Controller
+from pyngine.constants import Color, Font, Anchor
+from pyngine.label import Label
+from pyngine.button import Button
+from pyngine.layout import Grid
+from pyngine.controller import Controller
+
 from config import settings
-from constants import Color, Font, Anchor
-from label import Label
-from button import Button
-from layout import Grid
 
 class Menu_Controller(Controller):
 
@@ -14,7 +15,7 @@ class Menu_Controller(Controller):
 
     def initialize_components(self):
 
-        self.title_layout = Grid(4, 4)
+        self.title_layout = Grid(self.background_panel, 4, 4)
 
         self.title_label = Label(self.interface, 'Press enter to play')
         self.title_label.loc = self.title_layout.get_pixel(3, 3)

@@ -14,5 +14,5 @@
     "shoot_cooldown": 0.1,
     "move_cooldown": 0.017,
     "grid_size": 40,
-    "square_size": 20
+    "tile_size": 20
 }

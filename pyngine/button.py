@@ -1,6 +1,6 @@
 
-from constants import Color, Font, Anchor
-from component import Component
+from pyngine.constants import Color, Font, Anchor
+from pyngine.component import Component
 
 class Button(Component):
 
@@ -49,5 +49,5 @@ class Button(Component):
             right = self.loc[0] + self.width * self.scale / 2
             top = self.loc[1] - self.height * self.scale / 2
             bottom = self.loc[1] + self.height * self.scale / 2
-            
+
             return left <= x <= right and top <= y <= bottom

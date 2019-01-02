@@ -1,16 +1,18 @@
 import pygame
 
-from config import settings
-from constants import Color, Font
+from pyngine.constants import Color, Font
 
 class Interface(object):
 
-    def __init__(self, window_text):
+    def __init__(self, window_text, display_size, tile_size, refresh_rate):
 
         # pygame tools
         pygame.init()
         pygame.font.init()
-        self.display = pygame.display.set_mode((settings.display_size, settings.display_size))
+        self.display_size = display_size
+        self.tile_size = tile_size
+        self.refresh_rate = refresh_rate
+        self.display = pygame.display.set_mode((self.display_size, self.display_size))
         pygame.display.set_caption(window_text)
         pygame.display.update()
         self.clock = pygame.time.Clock()
@@ -21,12 +23,12 @@ class Interface(object):
     # call to update the screen
     def update(self):
         pygame.display.update()
-        self.clock.tick(settings.refresh_rate)
+        self.clock.tick(self.refresh_rate)
 
     # draw a tile defined in config
     def draw_tile(self, x, y, color):
-        area = [settings.square_size * x, settings.square_size * y,
-                settings.square_size, settings.square_size]
+        area = [self.tile_size * x, self.tile_size * y,
+                self.tile_size, self.tile_size]
         pygame.draw.rect(self.display, color, area)
 
     # draw a sprite on a tile
@@ -40,5 +42,5 @@ class Interface(object):
 
     # set the screen to background color
     def clear(self):
-        area = [0, 0, settings.display_size, settings.display_size]
+        area = [0, 0, self.display_size, self.display_size]
         pygame.draw.rect(self.display, Color.background, area)

@@ -2,13 +2,15 @@ import pygame, time
 from collections import defaultdict
 
 from thread import Thread
-from config import settings
-from constants import Mouse
+
+from pyngine.constants import Mouse
+from pyngine.panel import Panel
 
 class Controller(object):
 
-    def __init__(self, interface, clear=True):
+    def __init__(self, interface, tick_rate=1, clear=True):
 
+        self.tick_rate = tick_rate
         self.ticking = True     # ticking separate from framerate
         self.done = False       # controller looping
         self.quit = False       # close and return controller
@@ -25,6 +27,11 @@ class Controller(object):
 
         self.tick_thread = Thread(target=self.tick, args=())
 
+        # create an empty panel for components to be on
+        self.background_panel = Panel(self.interface)
+        self.background_panel.width = interface.display_size
+        self.background_panel.height = interface.display_size
+
     def initialize_components(self):
         pass
 
@@ -32,7 +39,7 @@ class Controller(object):
     def tick(self):
         while self.ticking:
             self.tick_actions()
-            time.sleep(1 / settings.tick_rate)
+            time.sleep(1 / self.tick_rate)
 
     # custom actions during tick
     def tick_actions(self):

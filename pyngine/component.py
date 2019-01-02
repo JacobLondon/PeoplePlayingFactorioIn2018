@@ -1,7 +1,6 @@
 
-from config import settings
-from constants import Anchor, Font, Color
-from layout import Grid
+from pyngine.constants import Anchor, Font, Color
+from pyngine.layout import Grid
 
 class Component(object):
 

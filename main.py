@@ -1,11 +1,12 @@
 
+from pyngine.interface import Interface
+
 from menu_controller import Menu_Controller
-from display_interface import Interface
 from config import settings
 
 def main():
 
-    interface = Interface('PPFI18')
+    interface = Interface('PPFI18', settings.display_size, settings.tile_size, settings.refresh_rate)
     controller = Menu_Controller(interface)
 
     # run controllers until close
