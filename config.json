@@ -13,6 +13,8 @@
     "missile_vel": 0.07,
     "shoot_cooldown": 0.1,
     "move_cooldown": 0.017,
+
+    "resolution": [1000, 800],
     "grid_size": 40,
     "tile_size": 20
 }

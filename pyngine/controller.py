@@ -29,8 +29,8 @@ class Controller(object):
 
         # create an empty panel for components to be on
         self.background_panel = Panel(self.interface)
-        self.background_panel.width = interface.display_size
-        self.background_panel.height = interface.display_size
+        self.background_panel.width = interface.resolution[0]
+        self.background_panel.height = interface.resolution[1]
 
     def initialize_components(self):
         pass
@@ -108,6 +108,10 @@ class Controller(object):
         return None
 
     def run(self):
+
+        # the connection failed before running
+        if self.done:
+            return self.open_on_close()
 
         self.initialize_components()
         self.load_components()

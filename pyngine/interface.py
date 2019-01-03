@@ -4,15 +4,15 @@ from pyngine.constants import Color, Font
 
 class Interface(object):
 
-    def __init__(self, window_text, display_size, tile_size, refresh_rate):
+    def __init__(self, window_text, resolution, tile_size, refresh_rate):
 
         # pygame tools
         pygame.init()
         pygame.font.init()
-        self.display_size = display_size
+        self.resolution = resolution
         self.tile_size = tile_size
         self.refresh_rate = refresh_rate
-        self.display = pygame.display.set_mode((self.display_size, self.display_size))
+        self.display = pygame.display.set_mode(self.resolution)
         pygame.display.set_caption(window_text)
         pygame.display.update()
         self.clock = pygame.time.Clock()
@@ -42,5 +42,5 @@ class Interface(object):
 
     # set the screen to background color
     def clear(self):
-        area = [0, 0, self.display_size, self.display_size]
+        area = [0, 0, self.resolution[0], self.resolution[1]]
         pygame.draw.rect(self.display, Color.background, area)

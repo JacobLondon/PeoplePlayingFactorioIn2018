@@ -3,6 +3,7 @@ import pygame, time, copy, sys
 from pyngine.constants import Color, Dir, Anchor, Font
 from pyngine.controller import Controller
 from pyngine.label import Label
+from pyngine.panel import Panel
 from pyngine.layout import Relative, Grid
 
 from thread import Thread
@@ -16,7 +17,12 @@ class Game_Controller(Controller):
     def __init__(self, interface):
         Controller.__init__(self, interface, settings.tick_rate)
 
-        self.client = Client()
+        # try to connect
+        try:
+            self.client = Client()
+        except ConnectionRefusedError:
+            self.done = True
+            return
 
         # load players
         self.p1 = Player.create_playerone()
@@ -38,14 +44,22 @@ class Game_Controller(Controller):
 
     def initialize_components(self):
 
-        self.center_layout = Relative(self.background_panel)
+        # defined by where the play takes place
+        self.game_panel = Panel(self.background_panel)
+        self.game_panel.width = settings.game_size
+        self.game_panel.height = settings.resolution[1]
+
+        # center label shows info in the center of the game panel
+        self.relative_layout = Relative(self.game_panel)
         self.center_label = Label(self.interface, 'Press esc to pause')
-        self.center_label.loc = self.center_layout.center
+        self.center_label.loc = self.relative_layout.center
         self.center_label.anchor = Anchor.center
 
-        self.pause_layout = Grid(self.background_panel, 8, 8)
+        # pause layout displays the pause menu based from the background
+        self.pause_layout = Relative(self.background_panel)
         self.pause_label = Label(self.interface, 'Paused')
-        self.pause_label.loc = self.pause_layout.get_pixel(8, 1)
+        self.pause_label.loc = self.pause_layout.northeast
+        self.pause_label.anchor = Anchor.northeast
         self.pause_label.font = Font.large
         self.pause_label.background = Color.pause
         self.pause_label.visible = False

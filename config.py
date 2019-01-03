@@ -20,8 +20,10 @@ class Settings(object):
         self.missile_vel = 1 / settings['missile_vel']      # the velocity of missiles
         self.shoot_cooldown = settings['shoot_cooldown']    # cooldown in seconds for shooting
         self.move_cooldown = settings['move_cooldown']      # cooldown in seconds for moving
+
+        self.resolution = settings['resolution']
         self.grid_size = settings['grid_size']              # number of grids wide/tall the game is
         self.tile_size = settings['tile_size']              # number of pixels wide/tall each grid is
-        self.display_size = settings['grid_size'] * settings['tile_size']
+        self.game_size = settings['grid_size'] * settings['tile_size']
 
 settings = Settings()
