@@ -8,14 +8,16 @@ class Label(Component):
         Component.__init__(self, interface)
         self.text = text
 
+    def load(self):
+        self.width, self.height = self.font.size(self.text)
+        self.set_anchor()
+
     def refresh(self):
 
         if not self.visible:
             return
 
         # draw the text to the display
-        self.width, self.height = self.font.size(self.text)
-        self.set_anchor()
         self.draw_component()
 
     def draw_component(self):

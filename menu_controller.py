@@ -26,9 +26,13 @@ class Menu_Controller(Controller):
         self.start_button.loc = self.title_layout.get_pixel(3, 4)
         self.start_button.anchor = Anchor.center
 
+    def load_components(self):
+        self.title_label.load()
+        self.start_button.load()
+
     def update_components(self):
         self.title_label.refresh()
-        self.start_button.refresh(self.mouse_x, self.mouse_y)
+        self.start_button.refresh()
 
     def open_on_close(self):
         from game_controller import Game_Controller

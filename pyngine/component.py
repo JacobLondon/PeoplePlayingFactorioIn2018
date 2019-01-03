@@ -35,6 +35,9 @@ class Component(object):
         elif self.anchor == Anchor.center:
             self.anchored_loc = (self.loc[0] - self.width / 2, self.loc[1] - self.height / 2)
 
+    def load(self):
+        pass
+
     def refresh(self):
         pass
 
@@ -46,6 +49,6 @@ class Component(object):
         left = self.anchored_loc[0]
         right = self.anchored_loc[0] + self.width
         top = self.anchored_loc[1]
-        bottom = elf.anchored_loc[1] + self.height
+        bottom = self.anchored_loc[1] + self.height
 
         return left <= x <= right and top <= y <= bottom

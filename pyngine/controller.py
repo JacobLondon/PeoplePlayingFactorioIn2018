@@ -35,6 +35,9 @@ class Controller(object):
     def initialize_components(self):
         pass
 
+    def load_components(self):
+        pass
+
     # thread handling ticking
     def tick(self):
         while self.ticking:
@@ -107,6 +110,8 @@ class Controller(object):
     def run(self):
 
         self.initialize_components()
+        self.load_components()
+        self.load_components()
         self.setup()
         self.tick_thread.start()
 

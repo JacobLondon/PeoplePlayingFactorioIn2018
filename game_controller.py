@@ -50,6 +50,10 @@ class Game_Controller(Controller):
         self.pause_label.background = Color.pause
         self.pause_label.visible = False
 
+    def load_components(self):
+        self.center_label.load()
+        self.pause_label.load()
+
     def update_components(self):
         self.center_label.refresh()
         self.pause_label.visible = self.paused
