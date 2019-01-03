@@ -3,6 +3,8 @@ import pygame
 class Color(object):
 
     black = (0,0,0)
+    dark_gray = (80,80,80)
+    light_gray = (160,160,160)
     white = (255,255,255)
     red = (255,0,0)
     blue = (0,0,255)

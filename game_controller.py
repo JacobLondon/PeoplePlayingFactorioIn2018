@@ -47,7 +47,7 @@ class Game_Controller(Controller):
         # defined by where the play takes place
         self.game_panel = Panel(self.background_panel)
         self.game_panel.width = settings.game_size
-        self.game_panel.height = settings.resolution[1]
+        self.game_panel.height = settings.game_size
 
         # center label shows info in the center of the game panel
         self.relative_layout = Relative(self.game_panel)

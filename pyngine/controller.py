@@ -138,13 +138,6 @@ class Controller(object):
             self.done = True
             self.quit = True
 
-        # control user text input
-        elif self.typing and event.type == pygame.KEYDOWN:
-            if self.key_presses[pygame.K_BACKSPACE]:
-                self.typed_text = self.typed_text[:-1]
-            else:
-                self.typed_text += pygame.key.name(event.key)
-
         # player starts doing actions
         elif event.type == pygame.KEYDOWN:
             self.key_presses[event.key] = True
@@ -152,6 +145,15 @@ class Controller(object):
         # player stops doing actions
         elif event.type == pygame.KEYUP:
             self.key_presses[event.key] = False
+
+        # control user text input
+        if self.typing and event.type == pygame.KEYDOWN:
+            if self.key_presses[pygame.K_BACKSPACE]:
+                self.typed_text = self.typed_text[:-1]
+            elif self.key_presses[pygame.K_SPACE]:
+                self.typed_text += ' '
+            else:
+                self.typed_text += pygame.key.name(event.key)
 
         # mouse starts clicking/scrolling
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -219,3 +221,6 @@ class Controller(object):
         pass
     def down_keydown(self):
         pass
+
+    def background_panel_clicked(self):
+        self.typing = False

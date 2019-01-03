@@ -17,19 +17,19 @@ class Button(Component):
             self.hover = Color.hover
             self.font = Font.button
 
+            # adjust the button to the given scale size
+            self.width, self.height = self.font.size(self.text)
+            self.width *= self.scale
+            self.height *= self.scale
+
             # button is made with a label on a panel
             self.panel = Panel(interface)
 
             self.label = Label(interface, self.text)
             self.label.anchor = Anchor.center
-            self.label.font = Font.button
 
         def load(self):
 
-            # adjust the button to the given scale size
-            self.width, self.height = self.font.size(self.label.text)
-            self.width *= self.scale
-            self.height *= self.scale
             self.set_anchor()
 
             # update the panel with button's members
@@ -43,6 +43,7 @@ class Button(Component):
             # update the label with button's members
             self.center_layout = Relative(self.panel)
             self.label.text = self.text
+            self.label.font = self.font
             self.label.loc = self.center_layout.center
             self.label.anchor = Anchor.center
             self.label.foreground = self.foreground
@@ -53,7 +54,6 @@ class Button(Component):
 
             if not self.visible:
                 return
-
 
             # change color based on mouse hovering
             x, y = pygame.mouse.get_pos()

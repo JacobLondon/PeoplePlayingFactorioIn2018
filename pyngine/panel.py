@@ -1,3 +1,4 @@
+import pygame
 
 from pyngine.component import Component
 
@@ -13,6 +14,12 @@ class Panel(Component):
 
         if not self.visible:
             return
+
+        x, y = pygame.mouse.get_pos()
+        if self.in_component(x, y):
+            self.focused = True
+        else:
+            self.focused = False
 
         self.draw_component()
 
