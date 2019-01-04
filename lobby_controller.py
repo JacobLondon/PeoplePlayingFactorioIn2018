@@ -1,4 +1,4 @@
-import json
+import json, time
 
 from pyngine.controller import Controller
 from pyngine.label import Label
@@ -103,6 +103,7 @@ class Lobby_Controller(Controller):
         while self.typing:
             self.ip_textbox.text = self.typed_text
             self.ip_textbox.load()
+            time.sleep(1 / settings.refresh_rate)
 
     def close_actions(self):
 

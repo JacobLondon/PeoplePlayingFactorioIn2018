@@ -1,4 +1,4 @@
-import pygame, time
+import pygame, time, threading
 from collections import defaultdict
 
 from thread import Thread
@@ -41,6 +41,7 @@ class Controller(object):
     # thread handling ticking
     def tick(self):
         while self.ticking:
+            print(threading.active_count())
             self.tick_actions()
             time.sleep(1 / self.tick_rate)
 
