@@ -7,8 +7,8 @@ from pyngine.textbox import Textbox
 from pyngine.layout import Relative, Grid
 from pyngine.constants import Color, Anchor, Font
 
-from config import settings
-from thread import Thread
+from ..config import settings
+from ..thread import Thread
 
 class Lobby_Controller(Controller):
 
@@ -59,11 +59,11 @@ class Lobby_Controller(Controller):
     def open_on_close(self):
 
         if self.connect:
-            from game_controller import Game_Controller
+            from .game_controller import Game_Controller
             game = Game_Controller(self.interface, self.client_address)
             game.run()
         elif self.back:
-            from menu_controller import Menu_Controller
+            from .menu_controller import Menu_Controller
             menu = Menu_Controller(self.interface)
             menu.run()
 

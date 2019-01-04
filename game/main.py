@@ -1,7 +1,7 @@
 
 from pyngine.interface import Interface
 
-from menu_controller import Menu_Controller
+from gui import Menu
 from config import settings
 
 def main():
@@ -10,7 +10,7 @@ def main():
         settings.grid_height, settings.refresh_rate]
 
     interface = Interface(*args)
-    controller = Menu_Controller(interface)
+    controller = Menu(interface)
 
     # run the first controller
     controller = controller.run()

@@ -4,7 +4,7 @@ from pyngine.button import Button
 from pyngine.layout import Relative, Grid
 from pyngine.constants import Color, Anchor, Font
 
-from config import settings
+from ..config import settings
 
 class Timeout_Controller(Controller):
 
@@ -36,7 +36,7 @@ class Timeout_Controller(Controller):
         self.return_button.refresh()
 
     def open_on_close(self):
-        from menu_controller import Menu_Controller
+        from .menu_controller import Menu_Controller
         menu = Menu_Controller(self.interface)
         menu.run()
 

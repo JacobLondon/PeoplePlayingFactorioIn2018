@@ -6,7 +6,7 @@ from pyngine.button import Button
 from pyngine.layout import Grid
 from pyngine.controller import Controller
 
-from config import settings
+from ..config import settings
 
 class Menu_Controller(Controller):
 
@@ -42,7 +42,7 @@ class Menu_Controller(Controller):
         self.quit_button.refresh()
 
     def open_on_close(self):
-        from lobby_controller import Lobby_Controller
+        from .lobby_controller import Lobby_Controller
         lobby = Lobby_Controller(self.interface)
         lobby.run()
 

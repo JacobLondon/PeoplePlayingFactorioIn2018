@@ -10,7 +10,7 @@ from thread import Thread
 from sprite import Player, Missile
 from client import Client
 from gamestate import State, json_to_obj
-from config import settings
+from ..config import settings
 
 class Game_Controller(Controller):
 
@@ -222,12 +222,12 @@ class Game_Controller(Controller):
 
         # show timeout screen if connection fails
         if not self.success_connect:
-            from timeout_controller import Timeout_Controller
+            from .timeout_controller import Timeout_Controller
             timeout = Timeout_Controller(self.interface)
             timeout.run()
         # go to main menu
         else:
-            from menu_controller import Menu_Controller
+            from .menu_controller import Menu_Controller
             menu = Menu_Controller(self.interface)
             menu.run()
 

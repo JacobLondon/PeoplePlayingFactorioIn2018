@@ -1,0 +1,3 @@
+[submodule "game/pyngine"]
+	path = game/pyngine
+	url = git@github.com:JacobLondon/pyngine.git
