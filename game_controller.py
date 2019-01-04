@@ -21,10 +21,10 @@ class Game_Controller(Controller):
         self.success_connect = False
         Thread(target=self.connect, args=(client_address,)).start()
         # check to see if the connection is timing out
-        for wait in range(settings.timeout):
-            time.sleep(1)
+        for _ in range(settings.timeout):
             if self.success_connect:
                 break
+            time.sleep(1)
 
         # if the client fails to connect
         if not self.success_connect:
@@ -48,6 +48,7 @@ class Game_Controller(Controller):
         self.fire_ready = True
         self.move_ready = True
         self.paused = False
+        self.receiving = False
 
     def initialize_components(self):
 
@@ -162,12 +163,20 @@ class Game_Controller(Controller):
 
     def receive(self):
 
+        # do not try to receive more if there is none to receive
+        if self.receiving:
+            return
+
+        self.receiving = True
         try:
             received_data = self.client.receive()
         # the host was forcibly closed, end the program
         except:
             self.done = True
+            self.receiving = False
             return
+        finally:
+            self.receiving = False
 
         # convert json to object if there is data
         received_state = json_to_obj(received_data)
