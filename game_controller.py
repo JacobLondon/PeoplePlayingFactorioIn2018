@@ -97,8 +97,11 @@ class Game_Controller(Controller):
             # update to next pos
             m.loc = (m.loc[0], m.loc[1] + m.dir / settings.missile_vel)
 
-            # remove if it went off the screen
-            if m.loc[1] < 0 or m.loc[1] > settings.grid_size:
+            top = self.game_panel.anchored_loc[1]
+            bottom = self.game_panel.anchored_loc[1] + self.game_panel.height
+
+            # remove if it went off the game panel
+            if m.loc[1] < top or m.loc[1] > bottom:
                 self.missiles.remove(m)
                 continue
 
@@ -121,12 +124,14 @@ class Game_Controller(Controller):
 
         # move left and bounds check
         if direction == Dir.left:
-            if 0 <= player.loc[0] - 1:
+            left = self.game_panel.anchored_loc[0]
+            if left <= player.loc[0] - 1:
                 player.loc = (player.loc[0] - 1, player.loc[1])
 
         # move right and bounds check
         elif direction == Dir.right:
-            if player.loc[0] + 1 < settings.grid_size:
+            right = self.game_panel.anchored_loc[0] + self.game_panel.width
+            if player.loc[0] + 1 < right:
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
         self.move_ready = False
@@ -218,11 +223,13 @@ class Game_Controller(Controller):
         # show timeout screen if connection fails
         if not self.success_connect:
             from timeout_controller import Timeout_Controller
-            return Timeout_Controller(self.interface)
+            timeout = Timeout_Controller(self.interface)
+            timeout.run()
         # go to main menu
         else:
             from menu_controller import Menu_Controller
-            return Menu_Controller(self.interface)
+            menu = Menu_Controller(self.interface)
+            menu.run()
 
     def escape_keydown(self):
         self.paused = not self.paused

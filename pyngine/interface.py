@@ -4,13 +4,14 @@ from pyngine.constants import Color, Font
 
 class Interface(object):
 
-    def __init__(self, window_text, resolution, tile_size, refresh_rate):
+    def __init__(self, window_text, resolution, grid_width, grid_height, refresh_rate):
 
         # pygame tools
         pygame.init()
         pygame.font.init()
         self.resolution = resolution
-        self.tile_size = tile_size
+        self.tile_width = resolution[0] / grid_width
+        self.tile_height = resolution[1] / grid_height
         self.refresh_rate = refresh_rate
         self.display = pygame.display.set_mode(self.resolution)
         pygame.display.set_caption(window_text)
@@ -27,8 +28,8 @@ class Interface(object):
 
     # draw a tile defined in config
     def draw_tile(self, x, y, color):
-        area = [self.tile_size * x, self.tile_size * y,
-                self.tile_size, self.tile_size]
+        area = [self.tile_width * x, self.tile_height * y,
+                self.tile_width, self.tile_height]
         pygame.draw.rect(self.display, color, area)
 
     # draw a sprite on a tile

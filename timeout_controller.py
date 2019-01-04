@@ -37,7 +37,8 @@ class Timeout_Controller(Controller):
 
     def open_on_close(self):
         from menu_controller import Menu_Controller
-        return Menu_Controller(self.interface)
+        menu = Menu_Controller(self.interface)
+        menu.run()
 
     def l_click_down(self):
         if self.return_button.focused:

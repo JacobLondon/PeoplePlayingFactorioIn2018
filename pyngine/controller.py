@@ -93,9 +93,8 @@ class Controller(object):
         # shutdown the program or open the parent container
         if self.quit:
             self.interface.close()
-            return None
         else:
-            return self.open_on_close()
+            self.open_on_close()
 
     # the controller will be closed
     def close_actions(self):
@@ -106,13 +105,12 @@ class Controller(object):
 
         # by default, close the program
         self.interface.close()
-        return None
 
     def run(self):
 
         # the connection failed before running
         if self.done:
-            return self.open_on_close()
+            self.open_on_close()
 
         self.initialize_components()
         self.load_components()

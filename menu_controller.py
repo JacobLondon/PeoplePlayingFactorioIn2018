@@ -43,7 +43,8 @@ class Menu_Controller(Controller):
 
     def open_on_close(self):
         from lobby_controller import Lobby_Controller
-        return Lobby_Controller(self.interface)
+        lobby = Lobby_Controller(self.interface)
+        lobby.run()
 
     def return_keydown(self):
         self.start_button_clicked()

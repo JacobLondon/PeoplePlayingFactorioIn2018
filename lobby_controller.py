@@ -60,17 +60,19 @@ class Lobby_Controller(Controller):
 
         if self.connect:
             from game_controller import Game_Controller
-            return Game_Controller(self.interface, self.client_address)
+            game = Game_Controller(self.interface, self.client_address)
+            game.run()
         elif self.back:
             from menu_controller import Menu_Controller
-            return Menu_Controller(self.interface)
+            menu = Menu_Controller(self.interface)
+            menu.run()
 
     def l_click_down(self):
         if self.join_button.focused:
             self.join_button_clicked()
         elif self.back_button.focused:
             self.back_button_clicked()
-        elif self.ip_textbox.focused:
+        elif self.ip_textbox.focused and not self.typing:
             Thread(target=self.ip_textbox_input, args=()).start()
         elif self.background_panel.focused:
             self.background_panel_clicked()
@@ -86,12 +88,7 @@ class Lobby_Controller(Controller):
         config = json.load(open('config.json', 'r'))
         config['client_ip'] = self.ip_textbox.text
         self.client_address = (self.ip_textbox.text, self.client_address[1])
-        json.dump(config, open('config.json', 'w'))
-
-        # reformat config.json to be more readable
-        formatted = settings.format_json(open('config.json', 'r').read())
-        config = open('config.json', 'w')
-        config.write(formatted)
+        json.dump(config, open('config.json', 'w'), indent=4, separators=(',', ': '))
 
     def back_button_clicked(self):
         self.done = True

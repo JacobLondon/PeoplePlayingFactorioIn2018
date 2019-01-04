@@ -23,24 +23,7 @@ class Settings(object):
         self.move_cooldown = settings['move_cooldown']      # cooldown in seconds for moving
 
         self.resolution = settings['resolution']
-        self.grid_size = settings['grid_size']              # number of grids wide/tall the game is
-        self.tile_size = settings['tile_size']              # number of pixels wide/tall each grid is
-        self.game_size = settings['grid_size'] * settings['tile_size']
-
-    # simplistic formatting method for json strings
-    @staticmethod
-    def format_json(json_str):
-        json_build = ''
-        for char in json_str:
-
-            if char == '}':
-                json_build += '\n'
-
-            json_build += char
-
-            if char == '{' or char == ',':
-                json_build += '\n\t'
-
-        return json_build
+        self.grid_width = settings['grid_width']            # number of grids wide the game is
+        self.grid_height = settings['grid_height']          # number of grid tall the game is
 
 settings = Settings()
