@@ -6,17 +6,21 @@ from thread import Thread
 
 class Server(object):
 
-    def __init__(self):
+    def __init__(self, run_as_thread=False):
         self.clients = {}
         self.addresses = {}
-        self.run()
+        if run_as_thread:
+            Thread(target=self.run).start()
+        else:
+            self.run()
 
     # await clients to join server
     def await_clients(self):
 
         while True:
             for num in range(settings.num_players):
-                client, client_address = self.server.accept()
+                client = self.server.accept()
+                client_address = client.accepted_addr
                 print("%s:%s has connected." % client_address)
                 client.send(num)
 

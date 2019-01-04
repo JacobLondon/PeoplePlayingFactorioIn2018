@@ -8,7 +8,11 @@ from config import settings
 class Socket():
     error = socket_error
 
-    def __init__(self, socket=None, client_address=settings.client_address):
+    def __init__(self, socket=None, client_address=settings.client_address, accepted_addr=None):
+        self.closed = False
+        self.accepted_addr = accepted_addr
+        if not accepted_addr is None:
+            print("%s: %s has connected." % accepted_addr)
         if socket is None:
             self.socket = socket_socket(AF_INET, SOCK_STREAM)
         else:
@@ -35,34 +39,29 @@ class Socket():
         self.close()
 
     def close(self):
+        self.closed = True
+        if not self.accepted_addr is None:
+            print("%s: %s has disconnected." % self.accepted_addr)
         self.socket.close()
 
-    def accept(self):
-        self.socket.setblocking(0)
-        while not select((self.socket,), (), (), 0.5)[0]:
-            pass
-        self.socket.setblocking(1)
-        conn, addr = self.socket.accept()
-        return Socket(conn), addr
+    def has_input(self):
+        ret = select((self.socket,), (), (), 0.5)
+        return ret[0] == [self.socket]
 
-'''
-port = 8880
-import select
-import socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setblocking(0)
-s.bind(("", port))
-s.listen(1)
-while 1:
-    ready = select.select((s,), (), (), 0.5)
-    #print '(ready %s)' % repr(ready)
-    if (ready[0]):
-        try:
-            endpoint = s.accept()
-        except socket.error, details:
-            print 'Ignoring socket error:', repr(details)
-            continue
-        print '(endpoint %s)' % repr(endpoint)
-        if endpoint:
-            break
-'''
+    def wait_for_input(self):
+        has_input = True
+        while has_input:
+            has_input = not self.has_input()
+            print("Waiting %s" % has_input)
+
+    def accept(self):
+        self.wait_for_input()
+        conn, addr = self.socket.accept()
+        return Socket(socket=conn, accepted_addr=addr)
+
+    def check_closed(self):
+        if self.has_input():
+            if self.receive() == settings.disconnect:
+                self.close()
+                return True
+        return False
