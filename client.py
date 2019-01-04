@@ -3,10 +3,10 @@ from config import settings
 
 class Client(object):
 
-    def __init__(self):
+    def __init__(self, client_address):
 
         # create and connect socket
-        self.socket = Socket()
+        self.socket = Socket(client_address=client_address)
         self.socket.connect_to_server()
         self.send = self.socket.send
         self.receive = self.socket.receive

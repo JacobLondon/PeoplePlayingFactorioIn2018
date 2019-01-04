@@ -1,3 +1,4 @@
+import json
 
 from pyngine.controller import Controller
 from pyngine.label import Label
@@ -15,6 +16,7 @@ class Lobby_Controller(Controller):
         Controller.__init__(self, interface)
         self.connect = False
         self.back = False
+        self.client_address = settings.client_address
 
     def initialize_components(self):
 
@@ -36,8 +38,9 @@ class Lobby_Controller(Controller):
 
         # textbox to enter the ip address to connect to
         self.ip_textbox = Textbox(self.interface)
-        self.ip_textbox.loc = self.lobby_layout.get_pixel(16, 15)
+        self.ip_textbox.loc = self.lobby_layout.get_pixel(17, 15)
         self.ip_textbox.anchor = Anchor.center
+        self.ip_textbox.text = settings.client_ip
 
     def load_components(self):
         self.background_panel.load()
@@ -57,7 +60,7 @@ class Lobby_Controller(Controller):
 
         if self.connect:
             from game_controller import Game_Controller
-            return Game_Controller(self.interface)
+            return Game_Controller(self.interface, self.client_address)
         elif self.back:
             from menu_controller import Menu_Controller
             return Menu_Controller(self.interface)
@@ -79,12 +82,29 @@ class Lobby_Controller(Controller):
         self.done = True
         self.connect = True
 
+        # change the client ip to what is given
+        config = json.load(open('config.json', 'r'))
+        config['client_ip'] = self.ip_textbox.text
+        self.client_address = (self.ip_textbox.text, self.client_address[1])
+        json.dump(config, open('config.json', 'w'))
+
+        # reformat config.json to be more readable
+        formatted = settings.format_json(open('config.json', 'r').read())
+        config = open('config.json', 'w')
+        config.write(formatted)
+
     def back_button_clicked(self):
         self.done = True
         self.back = True
 
     def ip_textbox_input(self):
         self.typing = True
+        self.typed_text = self.ip_textbox.text
         while self.typing:
             self.ip_textbox.text = self.typed_text
             self.ip_textbox.load()
+
+    def close_actions(self):
+
+        # make sure no input is still being read while in another controller
+        self.typing = False

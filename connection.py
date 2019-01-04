@@ -8,14 +8,16 @@ from config import settings
 class Socket():
     error = socket_error
 
-    def __init__(self, socket=None):
+    def __init__(self, socket=None, client_address=settings.client_address):
         if socket is None:
             self.socket = socket_socket(AF_INET, SOCK_STREAM)
         else:
             self.socket = socket
 
+        self.client_address = client_address
+
     def connect_to_server(self):
-        self.socket.connect(settings.client_address)
+        self.socket.connect(self.client_address)
 
     def listen_as_server(self):
         self.socket.bind(settings.server_address)

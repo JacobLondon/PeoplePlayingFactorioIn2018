@@ -14,13 +14,20 @@ from config import settings
 
 class Game_Controller(Controller):
 
-    def __init__(self, interface):
+    def __init__(self, interface, client_address):
         Controller.__init__(self, interface, settings.tick_rate)
 
-        # try to connect
-        try:
-            self.client = Client()
-        except ConnectionRefusedError:
+        # attempt to connect the client to the address
+        self.success_connect = False
+        Thread(target=self.connect, args=(client_address,)).start()
+        # check to see if the connection is timing out
+        for wait in range(settings.timeout):
+            time.sleep(1)
+            if self.success_connect:
+                break
+
+        # if the client fails to connect
+        if not self.success_connect:
             self.done = True
             return
 
@@ -72,6 +79,14 @@ class Game_Controller(Controller):
         self.center_label.refresh()
         self.pause_label.visible = self.paused
         self.pause_label.refresh()
+
+    def connect(self, client_address):
+        try:
+            self.client = Client(client_address)
+            self.success_connect = True
+        except ConnectionRefusedError:
+            self.done = True
+            self.success_connect = False
 
     def draw_missiles(self):
 
@@ -190,8 +205,15 @@ class Game_Controller(Controller):
         self.client.handshake_close()
 
     def open_on_close(self):
-        from menu_controller import Menu_Controller
-        return Menu_Controller(self.interface)
+
+        # show timeout screen if connection fails
+        if not self.success_connect:
+            from timeout_controller import Timeout_Controller
+            return Timeout_Controller(self.interface)
+        # go to main menu
+        else:
+            from menu_controller import Menu_Controller
+            return Menu_Controller(self.interface)
 
     def escape_keydown(self):
         self.paused = not self.paused

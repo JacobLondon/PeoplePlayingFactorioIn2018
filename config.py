@@ -12,6 +12,7 @@ class Settings(object):
         self.buffer_size = settings['buffer_size']
         self.encoding = settings['encoding']
         self.disconnect = settings['disconnect']
+        self.timeout = settings['timeout']                  # num of seconds for the client connection to time out
         self.tick_rate = settings['tick_rate']
         self.refresh_rate = settings['refresh_rate']
         self.num_clients = settings['num_clients']          # number of connections per server
@@ -25,5 +26,21 @@ class Settings(object):
         self.grid_size = settings['grid_size']              # number of grids wide/tall the game is
         self.tile_size = settings['tile_size']              # number of pixels wide/tall each grid is
         self.game_size = settings['grid_size'] * settings['tile_size']
+
+    # simplistic formatting method for json strings
+    @staticmethod
+    def format_json(json_str):
+        json_build = ''
+        for char in json_str:
+
+            if char == '}':
+                json_build += '\n'
+
+            json_build += char
+
+            if char == '{' or char == ',':
+                json_build += '\n\t'
+
+        return json_build
 
 settings = Settings()
