@@ -1,4 +1,5 @@
 import json, time
+from threading import Thread
 
 from game.pyngine.controller import Controller
 from game.pyngine.label import Label
@@ -8,7 +9,6 @@ from game.pyngine.layout import Relative, Grid
 from game.pyngine.constants import Color, Anchor, Font
 
 from game.utils.config import settings
-from game.utils.thread import Thread
 
 class Lobby_Controller(Controller):
 
@@ -73,7 +73,7 @@ class Lobby_Controller(Controller):
         elif self.back_button.focused:
             self.back_button_clicked()
         elif self.ip_textbox.focused and not self.typing:
-            Thread(target=self.ip_textbox_input, args=()).start()
+            Thread(target=self.ip_textbox_input, args=(), daemon=True).start()
         elif self.background_panel.focused:
             self.background_panel_clicked()
 

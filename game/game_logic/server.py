@@ -1,8 +1,8 @@
 import time
+from threading import Thread
 
 from game.utils.connection import Socket
 from game.utils.config import settings
-from game.utils.thread import Thread
 
 class Server(object):
 
@@ -10,7 +10,7 @@ class Server(object):
         self.clients = {}
         self.addresses = {}
         if run_as_thread:
-            Thread(target=self.run).start()
+            Thread(target=self.run, daemon=True).start()
         else:
             self.run()
 
@@ -28,7 +28,7 @@ class Server(object):
                 self.addresses[client] = client_address
 
                 # start thread for client
-                Thread(target=self.handle_client, args=(client,)).start()
+                Thread(target=self.handle_client, args=(client,), daemon=True).start()
 
     # handle data transmission for a given client
     def handle_client(self, client):

@@ -1,4 +1,5 @@
-import pygame, time, copy, sys
+import pygame, time, copy
+from threading import Thread
 
 from game.pyngine.constants import Color, Dir, Anchor, Font
 from game.pyngine.controller import Controller
@@ -11,7 +12,6 @@ from game.game_logic.client import Client
 from game.game_logic.gamestate import State, json_to_obj
 
 from game.utils.config import settings
-from game.utils.thread import Thread
 
 class Game_Controller(Controller):
 
@@ -20,7 +20,7 @@ class Game_Controller(Controller):
 
         # attempt to connect the client to the address
         self.success_connect = False
-        Thread(target=self.connect, args=(client_address,)).start()
+        Thread(target=self.connect, args=(client_address,), daemon=True).start()
         # check to see if the connection is timing out
         for _ in range(settings.timeout):
             if self.success_connect:
@@ -136,7 +136,7 @@ class Game_Controller(Controller):
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
         self.move_ready = False
-        Thread(target=self.move_cooldown, args=()).start()
+        Thread(target=self.move_cooldown, args=(), daemon=True).start()
 
     def shoot(self, dir):
 
@@ -152,7 +152,7 @@ class Game_Controller(Controller):
 
         # cannot fire again until the cooldown timer is done
         self.fire_ready = False
-        Thread(target=self.shoot_cooldown, args=()).start()
+        Thread(target=self.shoot_cooldown, args=(), daemon=True).start()
 
     def send(self):
 
@@ -203,8 +203,8 @@ class Game_Controller(Controller):
             self.p1 = received_state.p1
 
     def tick_actions(self):
-        Thread(target=self.send, args=()).start()
-        Thread(target=self.receive, args=()).start()
+        Thread(target=self.send, args=(), daemon=True).start()
+        Thread(target=self.receive, args=(), daemon=True).start()
 
     def update_actions(self):
 
