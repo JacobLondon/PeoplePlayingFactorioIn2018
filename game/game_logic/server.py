@@ -1,8 +1,8 @@
-import time, threading
+import time
 
-from connection import Socket
-from config import settings
-from thread import Thread
+from game.utils.connection import Socket
+from game.utils.config import settings
+from game.utils.thread import Thread
 
 class Server(object):
 

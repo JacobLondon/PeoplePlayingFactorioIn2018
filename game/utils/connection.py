@@ -3,7 +3,7 @@ from socket import AF_INET, SOCK_STREAM
 from socket import error as socket_error
 from select import select
 
-from config import settings
+from .config import settings
 
 class Socket():
     error = socket_error

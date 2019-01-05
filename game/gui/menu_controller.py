@@ -1,12 +1,10 @@
-import pygame, copy
+from game.pyngine.constants import Color, Font, Anchor
+from game.pyngine.label import Label
+from game.pyngine.button import Button
+from game.pyngine.layout import Grid
+from game.pyngine.controller import Controller
 
-from pyngine.constants import Color, Font, Anchor
-from pyngine.label import Label
-from pyngine.button import Button
-from pyngine.layout import Grid
-from pyngine.controller import Controller
-
-from ..config import settings
+from game.utils.config import settings
 
 class Menu_Controller(Controller):
 

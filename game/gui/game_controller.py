@@ -1,16 +1,17 @@
 import pygame, time, copy, sys
 
-from pyngine.constants import Color, Dir, Anchor, Font
-from pyngine.controller import Controller
-from pyngine.label import Label
-from pyngine.panel import Panel
-from pyngine.layout import Relative, Grid
+from game.pyngine.constants import Color, Dir, Anchor, Font
+from game.pyngine.controller import Controller
+from game.pyngine.label import Label
+from game.pyngine.panel import Panel
+from game.pyngine.layout import Relative, Grid
 
-from thread import Thread
-from sprite import Player, Missile
-from client import Client
-from gamestate import State, json_to_obj
-from ..config import settings
+from game.game_logic.game_objects import Player, Missile
+from game.game_logic.client import Client
+from game.game_logic.gamestate import State, json_to_obj
+
+from game.utils.config import settings
+from game.utils.thread import Thread
 
 class Game_Controller(Controller):
 

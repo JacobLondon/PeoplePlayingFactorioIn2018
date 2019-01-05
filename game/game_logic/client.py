@@ -1,5 +1,5 @@
-from connection import Socket
-from config import settings
+from game.utils.connection import Socket
+from game.utils.config import settings
 
 class Client(object):
 

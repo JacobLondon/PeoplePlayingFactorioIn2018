@@ -1,17 +1,18 @@
 
-from pyngine.constants import Color, Dir
-from config import settings
+from game.pyngine.constants import Color, Dir
 
-class Sprite(object):
+from game.utils.config import settings
+
+class GameObject(object):
 
     def __init__(self, color=Color.black, loc=(0, 0)):
         self.color = color
         self.loc = loc
 
-class Player(Sprite):
+class Player(GameObject):
 
     def __init__(self, color=Color.blue, loc=(0,0)):
-        Sprite.__init__(self, color=color, loc=loc)
+        super().__init__(self, color=color, loc=loc)
 
     @staticmethod
     def create_playerone():
@@ -27,8 +28,8 @@ class Player(Sprite):
         player.loc = (settings.grid_size / 2, 0)
         return player
 
-class Missile(Sprite):
+class Missile(GameObject):
 
     def __init__(self, color=Color.green, loc=(0, 0), dir=Dir.down):
-        Sprite.__init__(self, color=color, loc=loc)
+        super().__init__(self, color=color, loc=loc)
         self.dir = dir

@@ -1,1 +1,1 @@
-python server.py
+python -m game.game_logic.server

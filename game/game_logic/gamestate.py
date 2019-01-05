@@ -1,6 +1,6 @@
 import json
 
-from sprite import Missile, Player
+from game.game_logic.game_objects import Missile, Player
 
 # turn json string to object
 def _json_object_hook(d):

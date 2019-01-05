@@ -1,8 +1,8 @@
+from game.pyngine.interface import Interface
 
-from pyngine.interface import Interface
+from game.gui import Menu
 
-from gui import Menu
-from config import settings
+from game.utils.config import settings
 
 def main():
 

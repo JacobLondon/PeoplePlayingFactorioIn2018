@@ -1,14 +1,14 @@
 import json, time
 
-from pyngine.controller import Controller
-from pyngine.label import Label
-from pyngine.button import Button
-from pyngine.textbox import Textbox
-from pyngine.layout import Relative, Grid
-from pyngine.constants import Color, Anchor, Font
+from game.pyngine.controller import Controller
+from game.pyngine.label import Label
+from game.pyngine.button import Button
+from game.pyngine.textbox import Textbox
+from game.pyngine.layout import Relative, Grid
+from game.pyngine.constants import Color, Anchor, Font
 
-from ..config import settings
-from ..thread import Thread
+from game.utils.config import settings
+from game.utils.thread import Thread
 
 class Lobby_Controller(Controller):
 
