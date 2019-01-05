@@ -12,24 +12,24 @@ class GameObject(object):
 class Player(GameObject):
 
     def __init__(self, color=Color.blue, loc=(0,0)):
-        super().__init__(self, color=color, loc=loc)
+        GameObject.__init__(self, color=color, loc=loc)
 
     @staticmethod
     def create_playerone():
         player = Player()
         player.color = Color.red
-        player.loc = (settings.grid_size / 2, settings.grid_size - 1)
+        player.loc = (settings.grid_width / 2, settings.grid_height - 1)
         return player
 
     @staticmethod
     def create_playertwo():
         player = Player()
         player.color = Color.blue
-        player.loc = (settings.grid_size / 2, 0)
+        player.loc = (settings.grid_width / 2, 0)
         return player
 
 class Missile(GameObject):
 
     def __init__(self, color=Color.green, loc=(0, 0), dir=Dir.down):
-        super().__init__(self, color=color, loc=loc)
+        GameObject.__init__(self, color=color, loc=loc)
         self.dir = dir

@@ -20,7 +20,7 @@ class Game_Controller(Controller):
 
         # attempt to connect the client to the address
         self.success_connect = False
-        Thread(target=self.connect, args=(client_address,), daemon=True).start()
+        Thread(target=self.connect, args=(client_address,)).start()
         # check to see if the connection is timing out
         for _ in range(settings.timeout):
             if self.success_connect:
@@ -55,8 +55,8 @@ class Game_Controller(Controller):
 
         # defined by where the play takes place
         self.game_panel = Panel(self.background_panel)
-        self.game_panel.width = settings.game_size
-        self.game_panel.height = settings.game_size
+        self.game_panel.width = settings.resolution[0]
+        self.game_panel.height = settings.resolution[1]
 
         # center label shows info in the center of the game panel
         self.relative_layout = Relative(self.game_panel)
@@ -74,6 +74,7 @@ class Game_Controller(Controller):
         self.pause_label.visible = False
 
     def load_components(self):
+        self.game_panel.load()
         self.center_label.load()
         self.pause_label.load()
 
@@ -136,7 +137,7 @@ class Game_Controller(Controller):
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
         self.move_ready = False
-        Thread(target=self.move_cooldown, args=(), daemon=True).start()
+        Thread(target=self.move_cooldown, args=()).start()
 
     def shoot(self, dir):
 
@@ -152,7 +153,7 @@ class Game_Controller(Controller):
 
         # cannot fire again until the cooldown timer is done
         self.fire_ready = False
-        Thread(target=self.shoot_cooldown, args=(), daemon=True).start()
+        Thread(target=self.shoot_cooldown, args=()).start()
 
     def send(self):
 
@@ -203,8 +204,8 @@ class Game_Controller(Controller):
             self.p1 = received_state.p1
 
     def tick_actions(self):
-        Thread(target=self.send, args=(), daemon=True).start()
-        Thread(target=self.receive, args=(), daemon=True).start()
+        Thread(target=self.send, args=()).start()
+        Thread(target=self.receive, args=()).start()
 
     def update_actions(self):
 
