@@ -37,10 +37,15 @@ class Lobby_Controller(Controller):
         self.back_button.loc = self.lobby_layout.get_pixel(2, 30)
 
         # textbox to enter the ip address to connect to
-        self.ip_textbox = Textbox(self.interface)
+        self.ip_textbox = Textbox(self.interface, self)
         self.ip_textbox.loc = self.lobby_layout.get_pixel(17, 15)
         self.ip_textbox.anchor = Anchor.center
         self.ip_textbox.text = settings.client_ip
+
+        self.test_textbox = Textbox(self.interface, self)
+        self.test_textbox.loc = self.lobby_layout.get_pixel(17, 18)
+        self.test_textbox.anchor = Anchor.center
+        self.test_textbox.text = ''
 
     def load_components(self):
         self.background_panel.load()
@@ -48,6 +53,7 @@ class Lobby_Controller(Controller):
         self.join_button.load()
         self.back_button.load()
         self.ip_textbox.load()
+        self.test_textbox.load()
 
     def update_components(self):
         self.background_panel.refresh()
@@ -55,6 +61,7 @@ class Lobby_Controller(Controller):
         self.join_button.refresh()
         self.back_button.refresh()
         self.ip_textbox.refresh()
+        self.test_textbox.refresh()
 
     def open_on_close(self):
 
@@ -72,8 +79,12 @@ class Lobby_Controller(Controller):
             self.join_button_clicked()
         elif self.back_button.focused:
             self.back_button_clicked()
-        elif self.ip_textbox.focused and not self.typing:
-            Thread(target=self.ip_textbox_input, args=(), daemon=True).start()
+
+        elif self.ip_textbox.focused:
+            self.ip_textbox.typing = True
+        elif self.test_textbox.focused:
+            self.test_textbox.typing = True
+
         elif self.background_panel.focused:
             self.background_panel_clicked()
 
@@ -93,14 +104,6 @@ class Lobby_Controller(Controller):
     def back_button_clicked(self):
         self.done = True
         self.back = True
-
-    def ip_textbox_input(self):
-        self.typing = True
-        self.typed_text = self.ip_textbox.text
-        while self.typing:
-            self.ip_textbox.text = self.typed_text
-            self.ip_textbox.load()
-            time.sleep(1 / settings.refresh_rate)
 
     def close_actions(self):
 
