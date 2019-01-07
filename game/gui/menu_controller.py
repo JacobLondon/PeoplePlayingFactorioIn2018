@@ -15,16 +15,16 @@ class Menu_Controller(Controller):
 
         self.title_layout = Grid(self.background_panel, 8, 8)
 
-        self.title_label = Label(self.interface, 'Press enter to play')
+        self.title_label = Label(self, 'Press enter to play')
         self.title_label.loc = self.title_layout.get_pixel(5, 5)
         self.title_label.anchor = Anchor.center
         self.title_label.font = Font.menu
 
-        self.start_button = Button(self.interface, 'Click to play')
+        self.start_button = Button(self, 'Click to play')
         self.start_button.loc = self.title_layout.get_pixel(5, 6)
         self.start_button.anchor = Anchor.center
 
-        self.quit_button = Button(self.interface, 'Quit')
+        self.quit_button = Button(self, 'Quit')
         self.quit_button.loc = self.title_layout.get_pixel(5, 7)
         self.quit_button.anchor = Anchor.center
         self.quit_button.width = self.start_button.width

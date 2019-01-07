@@ -16,14 +16,14 @@ class Timeout_Controller(Controller):
         # display to the user the connection has timed out
         timeout_text = 'Connection timed out.'
         self.timeout_layout = Grid(self.background_panel, 32, 32)
-        self.timeout_label = Label(self.interface, timeout_text)
+        self.timeout_label = Label(self, timeout_text)
         self.timeout_label.loc = self.timeout_layout.get_pixel(17, 16)
         self.timeout_label.font = Font.menu
         self.timeout_label.background = None
         self.timeout_label.anchor = Anchor.center
 
         return_text = 'Return to menu'
-        self.return_button = Button(self.interface, return_text)
+        self.return_button = Button(self, return_text)
         self.return_button.loc = self.timeout_layout.get_pixel(17, 19)
         self.return_button.anchor = Anchor.center
 

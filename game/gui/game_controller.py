@@ -54,19 +54,19 @@ class Game_Controller(Controller):
     def initialize_components(self):
 
         # defined by where the play takes place
-        self.game_panel = Panel(self.background_panel)
+        self.game_panel = Panel(self)
         self.game_panel.width = settings.resolution[0]
         self.game_panel.height = settings.resolution[1]
 
         # center label shows info in the center of the game panel
         self.relative_layout = Relative(self.game_panel)
-        self.center_label = Label(self.interface, 'Press esc to pause')
+        self.center_label = Label(self, 'Press esc to pause')
         self.center_label.loc = self.relative_layout.center
         self.center_label.anchor = Anchor.center
 
         # pause layout displays the pause menu based from the background
         self.pause_layout = Relative(self.background_panel)
-        self.pause_label = Label(self.interface, 'Paused')
+        self.pause_label = Label(self, 'Paused')
         self.pause_label.loc = self.pause_layout.northeast
         self.pause_label.anchor = Anchor.northeast
         self.pause_label.font = Font.large

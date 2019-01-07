@@ -22,27 +22,28 @@ class Lobby_Controller(Controller):
 
         # info about the lobby label
         self.lobby_layout = Grid(self.background_panel, 32, 32)
-        self.lobby_label = Label(self.interface, 'Lobby')
+        self.lobby_label = Label(self, 'Lobby')
         self.lobby_label.loc = self.lobby_layout.get_pixel(4, 3)
         self.lobby_label.anchor = Anchor.center
         self.lobby_label.font = Font.menu
         self.lobby_label.background = None
 
         # button to connect/join a lobby
-        self.join_button = Button(self.interface, 'Connect')
-        self.join_button.loc = self.lobby_layout.get_pixel(25, 30)
+        self.join_button = Button(self, 'Connect')
+        self.join_button.loc = self.lobby_layout.get_pixel(32, 30)
+        self.join_button.anchor = Anchor.northeast
 
         # button to go back to the main menu
-        self.back_button = Button(self.interface, 'Back')
+        self.back_button = Button(self, 'Back')
         self.back_button.loc = self.lobby_layout.get_pixel(2, 30)
 
         # textbox to enter the ip address to connect to
-        self.ip_textbox = Textbox(self.interface, self)
+        self.ip_textbox = Textbox(self)
         self.ip_textbox.loc = self.lobby_layout.get_pixel(17, 15)
         self.ip_textbox.anchor = Anchor.center
         self.ip_textbox.text = settings.client_ip
 
-        self.test_textbox = Textbox(self.interface, self)
+        self.test_textbox = Textbox(self)
         self.test_textbox.loc = self.lobby_layout.get_pixel(17, 18)
         self.test_textbox.anchor = Anchor.center
         self.test_textbox.text = ''
@@ -88,9 +89,6 @@ class Lobby_Controller(Controller):
         elif self.background_panel.focused:
             self.background_panel_clicked()
 
-    def background_panel_clicked(self):
-        self.typing = False
-
     def join_button_clicked(self):
         self.done = True
         self.connect = True
@@ -104,8 +102,3 @@ class Lobby_Controller(Controller):
     def back_button_clicked(self):
         self.done = True
         self.back = True
-
-    def close_actions(self):
-
-        # make sure no input is still being read while in another controller
-        self.typing = False
