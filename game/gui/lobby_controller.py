@@ -80,7 +80,6 @@ class Lobby_Controller(Controller):
             self.join_button_clicked()
         elif self.back_button.focused:
             self.back_button_clicked()
-
         elif self.ip_textbox.focused:
             self.ip_textbox.typing = True
         elif self.test_textbox.focused:
