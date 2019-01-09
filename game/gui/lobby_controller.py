@@ -80,8 +80,6 @@ class Lobby_Controller(Controller):
             self.join_button_clicked()
         elif self.back_button.focused:
             self.back_button_clicked()
-        elif self.background_panel.focused:
-            self.background_panel_clicked()
 
     def join_button_clicked(self):
         self.done = True
