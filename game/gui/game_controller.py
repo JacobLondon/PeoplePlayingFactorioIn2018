@@ -20,17 +20,23 @@ class Game_Controller(Controller):
 
         # attempt to connect the client to the address
         self.success_connect = False
-        Thread(target=self.connect, args=(client_address,)).start()
+        self.timed_out = False
+        connect_thread = Thread(target=self.connect, args=(client_address,))
+        connect_thread.start()
+        timeout_thread = Thread(target=self.wait_for_timeout)
+        timeout_thread.start()
         # check to see if the connection is timing out
-        for _ in range(settings.timeout):
+        while not self.timed_out:
             if self.success_connect:
                 break
-            time.sleep(1)
 
         # if the client fails to connect
         if not self.success_connect:
             self.done = True
             return
+
+        connect_thread.join()
+        timeout_thread.join()
 
         # load players
         self.p1 = Player.create_playerone()
@@ -50,6 +56,21 @@ class Game_Controller(Controller):
         self.move_ready = True
         self.paused = False
         self.receiving = False
+
+    def wait_for_timeout(self):
+        for _ in range(settings.timeout):
+            time.sleep(1)
+            if self.success_connect:
+                return
+
+        self.timed_out = True
+
+    def connect(self, client_address):
+        try:
+            self.client = Client(client_address)
+            self.success_connect = True
+        except ConnectionRefusedError:
+            self.success_connect = False
 
     def initialize_components(self):
 
@@ -82,14 +103,6 @@ class Game_Controller(Controller):
         self.center_label.refresh()
         self.pause_label.visible = self.paused
         self.pause_label.refresh()
-
-    def connect(self, client_address):
-        try:
-            self.client = Client(client_address)
-            self.success_connect = True
-        except ConnectionRefusedError:
-            self.done = True
-            self.success_connect = False
 
     def draw_missiles(self):
 
@@ -170,7 +183,7 @@ class Game_Controller(Controller):
 
     def receive(self):
 
-        # do not try to receive more if there is none to receive
+        # do not try to receive more if there is nothing to receive
         if self.receiving:
             return
 
