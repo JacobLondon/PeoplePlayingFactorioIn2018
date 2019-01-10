@@ -122,7 +122,6 @@ class Game_Controller(Controller):
 
             self.interface.draw_sprite(m)
 
-
     def move_cooldown(self):
         time.sleep(settings.move_cooldown)
         self.move_ready = True
@@ -150,7 +149,7 @@ class Game_Controller(Controller):
                 self.player.loc = (player.loc[0] + 1, player.loc[1])
 
         self.move_ready = False
-        Thread(target=self.move_cooldown, args=()).start()
+        Thread(target=self.move_cooldown).start()
 
     def shoot(self, dir):
 
@@ -166,7 +165,7 @@ class Game_Controller(Controller):
 
         # cannot fire again until the cooldown timer is done
         self.fire_ready = False
-        Thread(target=self.shoot_cooldown, args=()).start()
+        Thread(target=self.shoot_cooldown).start()
 
     def send(self):
 
