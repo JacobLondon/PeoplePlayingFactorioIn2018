@@ -142,28 +142,49 @@ class Game_Controller(Controller):
         time.sleep(settings.shoot_cooldown)
         self.fire_ready = True
 
-    def move(self, direction, player):
+    def move(self):
+        x = self.player.loc[0]
+        dx = self.player.vel[0]
+        y = self.player.loc[1]
+        dy = self.player.vel[1]
+
+        if not self.game_panel.within(x + dx, y):
+            dx = 0
+            self.player.vel[0] = 0
+        if not self.game_panel.within(x, y + dy):
+            dy = 0
+            self.player.vel[1] = 0
+
+        self.player.loc = (x + dx, y + dy)
+
+    def add_velocity(self, direction):
 
         # only move if cooldown and not paused
         if not self.move_ready or self.paused:
             return
 
-        # move left and bounds check
+        # LRUD movement
         if direction == Dir.left:
-            if self.game_panel.within(player.loc[0] - settings.player_vel, player.loc[1]):
-                self.player.loc = (player.loc[0] - settings.player_vel, player.loc[1])
-
-        # move right and bounds check
+            self.player.vel[0] = self.player.vel[0] - settings.player_vel
         elif direction == Dir.right:
-            if self.game_panel.within(player.loc[0] + settings.player_vel, player.loc[1]):
-                self.player.loc = (player.loc[0] + settings.player_vel, player.loc[1])
-
-        if direction == Dir.up:
-            if self.game_panel.within(player.loc[0], player.loc[1] - settings.player_vel):
-                self.player.loc = (player.loc[0], player.loc[1] - settings.player_vel)
+            self.player.vel[0] = self.player.vel[0] + settings.player_vel
+        elif direction == Dir.up:
+            self.player.vel[1] = self.player.vel[1] - settings.player_vel
         elif direction == Dir.down:
-            if self.game_panel.within(player.loc[0], player.loc[1] + settings.player_vel):
-                self.player.loc = (player.loc[0], player.loc[1] + settings.player_vel)
+            self.player.vel[1] = self.player.vel[1] + settings.player_vel
+        # diagnal movement
+        elif direction == Dir.up_right:
+            self.player.vel[0] = self.player.vel[0] + settings.player_vel
+            self.player.vel[1] = self.player.vel[1] - settings.player_vel
+        elif direction == Dir.down_right:
+            self.player.vel[0] = self.player.vel[0] + settings.player_vel
+            self.player.vel[1] = self.player.vel[1] + settings.player_vel
+        elif direction == Dir.down_left:
+            self.player.vel[0] = self.player.vel[0] - settings.player_vel
+            self.player.vel[1] = self.player.vel[1] + settings.player_vel
+        elif direction == Dir.up_left:
+            self.player.vel[0] = self.player.vel[0] + settings.player_vel
+            self.player.vel[1] = self.player.vel[1] - settings.player_vel
 
         self.move_ready = False
         Thread(target=self.move_cooldown).start()
@@ -174,7 +195,7 @@ class Game_Controller(Controller):
         if not self.fire_ready or self.paused:
             return
 
-        # make a missile player and put it in the missile list
+        # make a missile and put it in the missile list
         self.update_pmouse_uvector()
         dir = (self.pmouse_uvector[0], self.pmouse_uvector[1])
         missile = Missile(dir=dir)
@@ -267,6 +288,9 @@ class Game_Controller(Controller):
         self.interface.draw_sprite(self.p1)
         self.interface.draw_sprite(self.p2)
 
+        self.move()
+        self.player.slow()
+
         # set gamestate
         self.gamestate.set_state(self.p1, self.p2, self.missile_buffer)
 
@@ -291,16 +315,38 @@ class Game_Controller(Controller):
         self.key_presses[pygame.K_ESCAPE] = False
 
     def w_keydown(self):
-        self.move(Dir.up, self.player)
+        Thread(target=self.add_velocity, args=(Dir.up,)).start()
 
     def a_keydown(self):
-        self.move(Dir.left, self.player)
+        Thread(target=self.add_velocity, args=(Dir.left,)).start()
 
     def s_keydown(self):
-        self.move(Dir.down, self.player)
+        Thread(target=self.add_velocity, args=(Dir.down,)).start()
 
     def d_keydown(self):
-        self.move(Dir.right, self.player)
+        Thread(target=self.add_velocity, args=(Dir.right,)).start()
 
     def l_click_down(self):
         self.shoot()
+
+
+    def custom_key_actions(self):
+        # custom key actions for moving diagnally
+        if self.key_presses[pygame.K_w] and self.key_presses[pygame.K_d]:
+            self.wd_keydown()
+        if self.key_presses[pygame.K_s] and self.key_presses[pygame.K_d]:
+            self.sd_keydown()
+        if self.key_presses[pygame.K_s] and self.key_presses[pygame.K_a]:
+            self.sa_keydown()
+        if self.key_presses[pygame.K_w] and self.key_presses[pygame.K_a]:
+            self.wa_keydown()
+
+    # custom actions for moving diagnally
+    def wd_keydown(self):
+        Thread(target=self.add_velocity, args=(Dir.up_right,)).start()
+    def sd_keydown(self):
+        Thread(target=self.add_velocity, args=(Dir.down_right,)).start()
+    def sa_keydown(self):
+        Thread(target=self.add_velocity, args=(Dir.down_left,)).start()
+    def wa_keydown(self):
+        Thread(target=self.add_velocity, args=(Dir.up_left,)).start()

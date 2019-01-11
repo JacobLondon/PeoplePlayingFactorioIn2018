@@ -15,12 +15,12 @@ class Menu_Controller(Controller):
 
         self.title_layout = Grid(self.background_panel, 8, 8)
 
-        self.title_label = Label(self, 'Press enter to play')
+        self.title_label = Label(self, 'People Playing Factorio in 2018')
         self.title_label.loc = self.title_layout.get_pixel(5, 5)
         self.title_label.anchor = Anchor.center
         self.title_label.font = Font.menu
 
-        self.start_button = Button(self, 'Click to play')
+        self.start_button = Button(self, 'Multiplayer')
         self.start_button.loc = self.title_layout.get_pixel(5, 6)
         self.start_button.anchor = Anchor.center
 
@@ -43,9 +43,6 @@ class Menu_Controller(Controller):
         from .lobby_controller import Lobby_Controller
         lobby = Lobby_Controller(self.interface)
         lobby.run()
-
-    def return_keydown(self):
-        self.start_button_clicked()
 
     def l_click_down(self):
         if self.start_button.focused:

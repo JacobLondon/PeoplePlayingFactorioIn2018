@@ -11,8 +11,9 @@ class GameObject(object):
 
 class Player(GameObject):
 
-    def __init__(self, color=Color.blue, loc=(0, 0)):
+    def __init__(self, color=Color.blue, loc=(0, 0), vel=[0., 0.]):
         GameObject.__init__(self, color=color, loc=loc)
+        self.vel = vel
 
     @staticmethod
     def create_playerone():
@@ -25,6 +26,13 @@ class Player(GameObject):
         player = Player()
         player.color = Color.blue
         return player
+
+    def slow(self):
+        for i in range(len(self.vel)):
+            if abs(self.vel[i]) < settings.cutoff_vel:
+                self.vel[i] = 0
+            else:
+                self.vel[i] *= settings.player_friction
 
 class Missile(GameObject):
 

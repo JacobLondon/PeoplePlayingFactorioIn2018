@@ -11,7 +11,9 @@
     "num_clients": 4,
     "num_players": 2,
     "missile_vel": 1,
-    "player_vel": 10,
+    "player_vel": 0.05,
+    "player_friction": 0.005,
+    "cutoff_vel": 0.01,
     "shoot_cooldown": 0.1,
     "move_cooldown": 0.017,
     "resolution": [
