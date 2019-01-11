@@ -1,4 +1,4 @@
-import pygame, time, copy
+import pygame, time, copy, numpy as np
 from threading import Thread
 
 from game.pyngine.constants import Color, Dir, Anchor, Font
@@ -26,10 +26,8 @@ class Game_Controller(Controller):
         timeout_thread = Thread(target=self.wait_for_timeout)
         timeout_thread.start()
         # check to see if the connection is timing out
-        while not self.timed_out:
-            if self.success_connect:
-                break
-
+        while not self.timed_out and not self.success_connect:
+            pass
         # if the client fails to connect
         if not self.success_connect:
             self.done = True
@@ -45,6 +43,9 @@ class Game_Controller(Controller):
         # hold the missiles until tick, then empty the buffer
         self.missiles = []
         self.missile_buffer = []
+
+        # unit vector from player to mouse
+        self.pmouse_uvector = np.array([0., 0.])
 
         # object which stores the data for the state
         self.gamestate = State(self.p1, self.p2, self.missiles, self.client.id)
@@ -104,19 +105,30 @@ class Game_Controller(Controller):
         self.pause_label.visible = self.paused
         self.pause_label.refresh()
 
+    def setup(self):
+
+        # set the players' positions based on game_panel
+        center_x = self.game_panel.anchored_loc[0] + self.game_panel.width / 2
+        top_y = self.game_panel.anchored_loc[1]
+        bot_y = self.game_panel.anchored_loc[1] + self.game_panel.height - settings.grid_height
+        self.p1.loc = (center_x, bot_y)
+        self.p2.loc = (center_x, top_y)
+
     def draw_missiles(self):
 
         # update each missile
         for m in self.missiles:
 
             # update to next pos
-            m.loc = (m.loc[0], m.loc[1] + m.dir / settings.missile_vel)
+            delta_x = m.dir[0] * settings.missile_vel
+            delta_y = m.dir[1] * settings.missile_vel
+            m.loc = (m.loc[0] + delta_x, m.loc[1] + delta_y)
 
             top = self.game_panel.anchored_loc[1]
             bottom = self.game_panel.anchored_loc[1] + self.game_panel.height
 
             # remove if it went off the game panel
-            if m.loc[1] < top or m.loc[1] > bottom:
+            if not self.game_panel.within(m.loc[0], m.loc[1]):
                 self.missiles.remove(m)
                 continue
 
@@ -138,26 +150,33 @@ class Game_Controller(Controller):
 
         # move left and bounds check
         if direction == Dir.left:
-            left = self.game_panel.anchored_loc[0]
-            if left <= player.loc[0] - 1:
-                player.loc = (player.loc[0] - 1, player.loc[1])
+            if self.game_panel.within(player.loc[0] - settings.player_vel, player.loc[1]):
+                self.player.loc = (player.loc[0] - settings.player_vel, player.loc[1])
 
         # move right and bounds check
         elif direction == Dir.right:
-            right = self.game_panel.anchored_loc[0] + self.game_panel.width
-            if player.loc[0] + 1 < right:
-                self.player.loc = (player.loc[0] + 1, player.loc[1])
+            if self.game_panel.within(player.loc[0] + settings.player_vel, player.loc[1]):
+                self.player.loc = (player.loc[0] + settings.player_vel, player.loc[1])
+
+        if direction == Dir.up:
+            if self.game_panel.within(player.loc[0], player.loc[1] - settings.player_vel):
+                self.player.loc = (player.loc[0], player.loc[1] - settings.player_vel)
+        elif direction == Dir.down:
+            if self.game_panel.within(player.loc[0], player.loc[1] + settings.player_vel):
+                self.player.loc = (player.loc[0], player.loc[1] + settings.player_vel)
 
         self.move_ready = False
         Thread(target=self.move_cooldown).start()
 
-    def shoot(self, dir):
+    def shoot(self):
 
         # onlly shoot if cooldown and not paused
         if not self.fire_ready or self.paused:
             return
 
         # make a missile player and put it in the missile list
+        self.update_pmouse_uvector()
+        dir = (self.pmouse_uvector[0], self.pmouse_uvector[1])
         missile = Missile(dir=dir)
         missile.loc = (self.player.loc[0], self.player.loc[1])
         self.missiles.append(missile)
@@ -167,13 +186,33 @@ class Game_Controller(Controller):
         self.fire_ready = False
         Thread(target=self.shoot_cooldown).start()
 
+    def update_pmouse_uvector(self):
+        x1 = self.player.loc[0]
+        x2 = self.mouse_x
+        y1 = self.player.loc[1]
+        y2 = self.mouse_y
+
+        delta_x = abs(x1 - x2)
+        delta_y = abs(y1 - y2)
+
+        left = x2 < x1
+        up = y2 < y1
+
+        dir = np.arctan2(delta_y, delta_x)
+        self.pmouse_uvector[0] = np.cos(dir)
+        self.pmouse_uvector[1] = np.sin(dir)
+        if left: self.pmouse_uvector[0] *= -1
+        if up: self.pmouse_uvector[1] *= -1
+
     def send(self):
 
         # send gamestate as a json
         try:
             self.client.send(self.gamestate.to_json())
         # the host was forcibly closed, end the program
-        except:
+        except Exception as e:
+            print('failed to send')
+            print(e)
             self.done = True
             return
 
@@ -190,7 +229,9 @@ class Game_Controller(Controller):
         try:
             received_data = self.client.receive()
         # the host was forcibly closed, end the program
-        except:
+        except Exception as e:
+            print('failed to receive')
+            print(e)
             self.done = True
             self.receiving = False
             return
@@ -216,8 +257,8 @@ class Game_Controller(Controller):
             self.p1 = received_state.p1
 
     def tick_actions(self):
-        Thread(target=self.send, args=()).start()
-        Thread(target=self.receive, args=()).start()
+        Thread(target=self.send).start()
+        Thread(target=self.receive).start()
 
     def update_actions(self):
 
@@ -249,14 +290,17 @@ class Game_Controller(Controller):
         self.paused = not self.paused
         self.key_presses[pygame.K_ESCAPE] = False
 
-    def left_keydown(self):
+    def w_keydown(self):
+        self.move(Dir.up, self.player)
+
+    def a_keydown(self):
         self.move(Dir.left, self.player)
 
-    def right_keydown(self):
+    def s_keydown(self):
+        self.move(Dir.down, self.player)
+
+    def d_keydown(self):
         self.move(Dir.right, self.player)
 
-    def up_keydown(self):
-        self.shoot(Dir.up)
-
-    def down_keydown(self):
-        self.shoot(Dir.down)
+    def l_click_down(self):
+        self.shoot()
