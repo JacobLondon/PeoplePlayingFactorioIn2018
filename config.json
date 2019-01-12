@@ -11,6 +11,7 @@
     "num_clients": 4,
     "num_players": 2,
     "missile_vel": 1,
+    "player_health": 10,
     "player_vel": 0.05,
     "player_friction": 0.005,
     "cutoff_vel": 0.01,

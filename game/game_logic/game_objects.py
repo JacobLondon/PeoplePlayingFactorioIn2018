@@ -11,9 +11,10 @@ class GameObject(object):
 
 class Player(GameObject):
 
-    def __init__(self, color=Color.blue, loc=(0, 0), vel=[0., 0.]):
+    def __init__(self, color=Color.blue, loc=(0, 0), vel=[0., 0.], health=0):
         GameObject.__init__(self, color=color, loc=loc)
         self.vel = vel
+        self.health = health
 
     @staticmethod
     def create_playerone():

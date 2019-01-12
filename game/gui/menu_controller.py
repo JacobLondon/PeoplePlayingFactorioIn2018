@@ -29,16 +29,6 @@ class Menu_Controller(Controller):
         self.quit_button.anchor = Anchor.center
         self.quit_button.width = self.start_button.width
 
-    def load_components(self):
-        self.title_label.load()
-        self.start_button.load()
-        self.quit_button.load()
-
-    def update_components(self):
-        self.title_label.refresh()
-        self.start_button.refresh()
-        self.quit_button.refresh()
-
     def open_on_close(self):
         from .lobby_controller import Lobby_Controller
         lobby = Lobby_Controller(self.interface)

@@ -27,14 +27,6 @@ class Timeout_Controller(Controller):
         self.return_button.loc = self.timeout_layout.get_pixel(17, 19)
         self.return_button.anchor = Anchor.center
 
-    def load_components(self):
-        self.timeout_label.load()
-        self.return_button.load()
-
-    def update_components(self):
-        self.timeout_label.refresh()
-        self.return_button.refresh()
-
     def open_on_close(self):
         from .menu_controller import Menu_Controller
         menu = Menu_Controller(self.interface)

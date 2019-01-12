@@ -11,7 +11,7 @@ def _json_object_hook(d):
     elif all([key in d for key in ['color', 'loc', 'dir']]):
         return Missile(**d)
 
-    elif all([key in d for key in ['color', 'loc']]):
+    elif all([key in d for key in ['color', 'loc', 'health']]):
         return Player(**d)
 
 def json_to_obj(data):

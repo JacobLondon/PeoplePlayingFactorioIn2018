@@ -48,22 +48,6 @@ class Lobby_Controller(Controller):
         self.test_textbox.anchor = Anchor.center
         self.test_textbox.text = ''
 
-    def load_components(self):
-        self.background_panel.load()
-        self.lobby_label.load()
-        self.join_button.load()
-        self.back_button.load()
-        self.ip_textbox.load()
-        self.test_textbox.load()
-
-    def update_components(self):
-        self.background_panel.refresh()
-        self.lobby_label.refresh()
-        self.join_button.refresh()
-        self.back_button.refresh()
-        self.ip_textbox.refresh()
-        self.test_textbox.refresh()
-
     def open_on_close(self):
 
         if self.connect:

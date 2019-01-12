@@ -95,22 +95,12 @@ class Game_Controller(Controller):
         self.pause_label.background = Color.pause
         self.pause_label.visible = False
 
-    def load_components(self):
-        self.game_panel.load()
-        self.center_label.load()
-        self.pause_label.load()
-
-    def update_components(self):
-        self.center_label.refresh()
-        self.pause_label.visible = self.paused
-        self.pause_label.refresh()
-
     def setup(self):
 
         # set the players' positions based on game_panel
         center_x = self.game_panel.anchored_loc[0] + self.game_panel.width / 2
         top_y = self.game_panel.anchored_loc[1]
-        bot_y = self.game_panel.anchored_loc[1] + self.game_panel.height - settings.grid_height
+        bot_y = self.game_panel.anchored_loc[1] + self.game_panel.height - self.interface.tile_height
         self.p1.loc = (center_x, bot_y)
         self.p2.loc = (center_x, top_y)
 
@@ -183,7 +173,7 @@ class Game_Controller(Controller):
             self.player.vel[0] = self.player.vel[0] - settings.player_vel
             self.player.vel[1] = self.player.vel[1] + settings.player_vel
         elif direction == Dir.up_left:
-            self.player.vel[0] = self.player.vel[0] + settings.player_vel
+            self.player.vel[0] = self.player.vel[0] - settings.player_vel
             self.player.vel[1] = self.player.vel[1] - settings.player_vel
 
         self.move_ready = False
@@ -294,6 +284,8 @@ class Game_Controller(Controller):
         # set gamestate
         self.gamestate.set_state(self.p1, self.p2, self.missile_buffer)
 
+        self.pause_label.visible = self.paused
+
     def close_actions(self):
         self.client.handshake_close()
 
@@ -315,20 +307,19 @@ class Game_Controller(Controller):
         self.key_presses[pygame.K_ESCAPE] = False
 
     def w_keydown(self):
-        Thread(target=self.add_velocity, args=(Dir.up,)).start()
+        self.add_velocity(Dir.up)
 
     def a_keydown(self):
-        Thread(target=self.add_velocity, args=(Dir.left,)).start()
+        self.add_velocity(Dir.left)
 
     def s_keydown(self):
-        Thread(target=self.add_velocity, args=(Dir.down,)).start()
+        self.add_velocity(Dir.down)
 
     def d_keydown(self):
-        Thread(target=self.add_velocity, args=(Dir.right,)).start()
+        self.add_velocity(Dir.right)
 
     def l_click_down(self):
         self.shoot()
-
 
     def custom_key_actions(self):
         # custom key actions for moving diagnally
@@ -343,10 +334,10 @@ class Game_Controller(Controller):
 
     # custom actions for moving diagnally
     def wd_keydown(self):
-        Thread(target=self.add_velocity, args=(Dir.up_right,)).start()
+        self.add_velocity(Dir.up_right)
     def sd_keydown(self):
-        Thread(target=self.add_velocity, args=(Dir.down_right,)).start()
+        self.add_velocity(Dir.down_right)
     def sa_keydown(self):
-        Thread(target=self.add_velocity, args=(Dir.down_left,)).start()
+        self.add_velocity(Dir.down_left)
     def wa_keydown(self):
-        Thread(target=self.add_velocity, args=(Dir.up_left,)).start()
+        self.add_velocity(Dir.up_left)
