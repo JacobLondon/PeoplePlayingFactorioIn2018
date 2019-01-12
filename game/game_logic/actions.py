@@ -1,4 +1,4 @@
-import numpy as np, time, copy
+import numpy as np, time, copy, random
 from threading import Thread
 
 from game.pyngine.constants import Color, Dir
@@ -6,6 +6,7 @@ from game.pyngine.constants import Color, Dir
 from game.game_logic.game_objects import Player, Missile
 from game.game_logic.client import Client
 from game.game_logic.gamestate import State, json_to_obj
+from game.game_logic.vector import Vector2
 
 from game.utils.config import settings
 
@@ -17,22 +18,21 @@ class Actions(object):
         self.interface = controller.interface
         self.game_panel = controller.game_panel
 
+        self.players = []
+
         # load players
-        self.p1 = Player.create_playerone()
-        self.p2 = Player.create_playertwo()
+        self.player = Player(id=self.controller.client.id)
+        self.players.append(self.player)
 
         # hold the missiles until tick, then empty the buffer
         self.missiles = []
         self.missile_buffer = []
 
-        # unit vector from player to mouse
-        self.pmouse_uvector = np.array([0., 0.])
+        # vector from player to mouse
+        self.pm_vector = Vector2()
 
         # object which stores the data for the state
-        self.gamestate = State(self.p1, self.p2, self.missiles, self.controller.client.id)
-
-        # the player id changes depending on client
-        self.player = self.p1 if self.controller.client.id == 0 else self.p2
+        self.gamestate = State(self.players, self.missile_buffer, self.controller.client.id)
 
         self.fire_ready = True
         self.move_ready = True
@@ -42,11 +42,14 @@ class Actions(object):
     def setup(self):
 
         # set the players' positions based on game_panel
-        center_x = self.game_panel.anchored_loc[0] + self.game_panel.width / 2
-        top_y = self.game_panel.anchored_loc[1]
-        bot_y = self.game_panel.anchored_loc[1] + self.game_panel.height - self.interface.tile_height
-        self.p1.loc = (center_x, bot_y)
-        self.p2.loc = (center_x, top_y)
+        left = self.game_panel.anchored_loc[0]
+        right = self.game_panel.anchored_loc[1] + self.game_panel.width - self.interface.tile_width
+        top = self.game_panel.anchored_loc[1]
+        bot = self.game_panel.anchored_loc[1] + self.game_panel.height - self.interface.tile_height
+        
+        # randomly place the player in the game
+        for player in self.players:
+            player.loc = (random.randint(left, right), random.randint(top, bot))
 
     def draw_missiles(self):
     
@@ -73,6 +76,7 @@ class Actions(object):
         time.sleep(settings.shoot_cooldown)
         self.fire_ready = True
 
+    # move the player based on their velocity
     def move(self):
         x = self.player.loc[0]
         dx = self.player.vel[0]
@@ -88,6 +92,7 @@ class Actions(object):
 
         self.player.loc = (x + dx, y + dy)
 
+    # give the player directional velocity
     def add_velocity(self, direction):
 
         # only move if cooldown and not paused
@@ -127,9 +132,13 @@ class Actions(object):
         if not self.fire_ready or self.paused:
             return
 
-        # make a missile and put it in the missile list
-        self.update_pmouse_uvector()
-        dir = (self.pmouse_uvector[0], self.pmouse_uvector[1])
+        # update the player mouse vector
+        tail = self.player.loc
+        head = (self.controller.mouse_x, self.controller.mouse_y)
+        self.pm_vector.set(head, tail)
+
+         # make a missile and put it in the missile list
+        dir = (self.pm_vector.unit[0], self.pm_vector.unit[1])
         missile = Missile(dir=dir)
         missile.loc = (self.player.loc[0], self.player.loc[1])
         self.missiles.append(missile)
@@ -137,25 +146,7 @@ class Actions(object):
 
         # cannot fire again until the cooldown timer is done
         self.fire_ready = False
-        Thread(target=self.shoot_cooldown).start()
-
-    def update_pmouse_uvector(self):
-        x1 = self.player.loc[0]
-        x2 = self.controller.mouse_x
-        y1 = self.player.loc[1]
-        y2 = self.controller.mouse_y
-
-        delta_x = abs(x1 - x2)
-        delta_y = abs(y1 - y2)
-
-        left = x2 < x1
-        up = y2 < y1
-
-        dir = np.arctan2(delta_y, delta_x)
-        self.pmouse_uvector[0] = np.cos(dir)
-        self.pmouse_uvector[1] = np.sin(dir)
-        if left: self.pmouse_uvector[0] *= -1
-        if up: self.pmouse_uvector[1] *= -1
+        Thread(target=self.shoot_cooldown).start()        
 
     def send(self):
 
@@ -196,18 +187,39 @@ class Actions(object):
         if received_state is None:
             return
 
-        # player cannot receive their own missiles
-        if self.controller.client.id != received_state.id:
+        # update state from other clients
+        if not self.gamestate.id == received_state.id:
 
             # load the new missiles
             for m in received_state.missile_buffer:
                 self.missiles.append(m)
 
-        # set pos of the other player
-        if self.controller.client.id == 0:
-            self.p2 = received_state.p2
-        else:
-            self.p1 = received_state.p1
+            # load the players
+            for player in received_state.players:
+
+                # get player from players list which matches the received player
+                match = list(filter(lambda p: p.id == player.id, self.players))
+
+                # received player is not in players list, it should be
+                if not match:
+                    self.players.append(player)
+
+                # update the player to be the received player if not self player
+                elif not match[0].id == self.player.id:
+                    self.update_player(match[0], player)
+
+            # players list may have a player who left the game, remove it
+            # TODO
+            '''for player in self.players:
+                match = list(filter(lambda p: p.id == player.id, received_state.players))
+                if not match:
+                    self.players.remove(player)'''
+
+    # update player with the received player
+    def update_player(self, current, received):
+        current.loc = received.loc
+        current.vel = received.vel
+        current.health = received.health
 
     def tick(self):
         Thread(target=self.send).start()
@@ -216,11 +228,11 @@ class Actions(object):
     def update(self):
         # update and draw sprites
         self.draw_missiles()
-        self.interface.draw_sprite(self.p1)
-        self.interface.draw_sprite(self.p2)
+        for player in self.players:
+            self.interface.draw_sprite(player)
 
         self.move()
         self.player.slow()
 
         # set gamestate
-        self.gamestate.set_state(self.p1, self.p2, self.missile_buffer)
+        self.gamestate.set_state(self.players, self.missile_buffer)

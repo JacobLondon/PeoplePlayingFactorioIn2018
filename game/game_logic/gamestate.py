@@ -1,18 +1,22 @@
 import json
 
 from game.game_logic.game_objects import Missile, Player
+from game.game_logic.vector import Vector2
 
 # turn json string to object
 def _json_object_hook(d):
 
-    if all([key in d for key  in ['id', 'p1', 'p2', 'missile_buffer']]):
+    if all([key in d for key  in ['id', 'players', 'missile_buffer']]):
         return State(**d)
 
     elif all([key in d for key in ['color', 'loc', 'dir']]):
         return Missile(**d)
 
-    elif all([key in d for key in ['color', 'loc', 'health']]):
+    elif all([key in d for key in ['id', 'color', 'loc', 'health']]):
         return Player(**d)
+
+    elif all([key in d for key in ['head', 'tail', 'angle', 'mag', 'unit']]):
+        return Vector2(**d)
 
 def json_to_obj(data):
     try:
@@ -24,15 +28,13 @@ def json_to_obj(data):
 
 class State(object):
 
-    def __init__(self, p1, p2, missile_buffer, id):
+    def __init__(self, players, missile_buffer, id):
         self.id = id
-        self.p1 = p1
-        self.p2 = p2
+        self.players = players
         self.missile_buffer = missile_buffer
 
-    def set_state(self, p1, p2, missile_buffer):
-        self.p1 = p1
-        self.p2 = p2
+    def set_state(self, players, missile_buffer):
+        self.players = players
         self.missile_buffer = missile_buffer
 
     # turns the object into a json string

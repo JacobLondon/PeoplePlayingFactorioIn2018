@@ -1,3 +1,4 @@
+import random
 
 from game.pyngine.constants import Color, Dir
 
@@ -11,23 +12,14 @@ class GameObject(object):
 
 class Player(GameObject):
 
-    def __init__(self, color=Color.blue, loc=(0, 0), vel=[0., 0.], health=0):
+    def __init__(self, id=0, color=Color.blue, loc=(0, 0), vel=[0., 0.], health=0):
         GameObject.__init__(self, color=color, loc=loc)
+        self.id = id
         self.vel = vel
         self.health = health
+        self.color = (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
 
-    @staticmethod
-    def create_playerone():
-        player = Player()
-        player.color = Color.red
-        return player
-
-    @staticmethod
-    def create_playertwo():
-        player = Player()
-        player.color = Color.blue
-        return player
-
+    # reduce the velocity by the friction amount
     def slow(self):
         for i in range(len(self.vel)):
             if abs(self.vel[i]) < settings.cutoff_vel:
