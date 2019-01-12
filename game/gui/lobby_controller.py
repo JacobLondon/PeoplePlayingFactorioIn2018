@@ -29,7 +29,7 @@ class Lobby_Controller(Controller):
         self.lobby_label.background = None
 
         # button to connect/join a lobby
-        self.join_button = Button(self, 'Connect')
+        self.join_button = Button(self, 'Join')
         self.join_button.loc = self.lobby_layout.get_pixel(32, 30)
         self.join_button.anchor = Anchor.northeast
 
@@ -39,14 +39,19 @@ class Lobby_Controller(Controller):
 
         # textbox to enter the ip address to connect to
         self.ip_textbox = Textbox(self)
-        self.ip_textbox.loc = self.lobby_layout.get_pixel(17, 15)
-        self.ip_textbox.anchor = Anchor.center
+        self.ip_textbox.loc = self.lobby_layout.get_pixel(3, 5)
+        self.ip_textbox.anchor = Anchor.northwest
         self.ip_textbox.text = settings.client_ip
 
-        self.test_textbox = Textbox(self)
-        self.test_textbox.loc = self.lobby_layout.get_pixel(17, 18)
-        self.test_textbox.anchor = Anchor.center
-        self.test_textbox.text = ''
+        # button to connect to a server
+        self.connect_button = Button(self, 'Connect')
+        self.connect_button.loc = self.lobby_layout.get_pixel(3, 7)
+        self.connect_button.width = self.ip_textbox.width
+
+        # get most recent lobby data from server
+        self.refresh_button = Button(self, 'Refresh')
+        self.refresh_button.loc = self.lobby_layout.get_pixel(3, 10)
+        self.refresh_button.width = self.ip_textbox.width
 
     def open_on_close(self):
 
