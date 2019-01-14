@@ -32,7 +32,7 @@ class Actions(object):
         self.pm_vector = Vector2()
 
         # object which stores the data for the state
-        self.gamestate = State(self.players, self.missile_buffer, self.controller.client.id)
+        self.gamestate = State(self.player, self.players, self.missile_buffer, self.controller.client.id)
         self.received_state = None
 
         self.fire_ready = True
@@ -49,8 +49,7 @@ class Actions(object):
         bot = self.game_panel.anchored_loc[1] + self.game_panel.height - self.interface.tile_height
         
         # randomly place the player in the game
-        for player in self.players:
-            player.loc = (random.randint(left, right), random.randint(top, bot))
+        self.player.loc = (random.randint(left, right), random.randint(top, bot))
 
     def draw_missiles(self):
     
@@ -135,7 +134,10 @@ class Actions(object):
 
         # update the player mouse vector
         tail = self.player.loc
-        head = (self.controller.mouse_x, self.controller.mouse_y)
+        # correct for top left corner
+        x = self.controller.mouse_x - self.interface.tile_width / 2
+        y = self.controller.mouse_y- self.interface.tile_height / 2
+        head = (x, y)
         self.pm_vector.set(head, tail)
 
          # make a missile and put it in the missile list
@@ -188,25 +190,18 @@ class Actions(object):
         if self.received_state is None:
             return
 
+        match = self.player_in_list(self.received_state.player, self.players)
+        if match == False:
+            self.players.append(self.received_state.player)
+        elif not match.id == self.player.id:
+            self.update_player(match, self.received_state.player)
+
         # update state from other clients
         if not self.gamestate.id == self.received_state.id:
 
             # load the new missiles
             for m in self.received_state.missile_buffer:
                 self.missiles.append(m)
-
-        # load the players
-        for player in self.received_state.players:
-            # get player from players list which matches the received player
-            match = self.player_in_list(player, self.players)
-
-            # received player is not in players list, it should be
-            if match == False:
-                self.players.append(player)
-
-            # update the player to be the received player if not self player
-            elif not match.id == self.player.id:
-                self.update_player(match, player)
     
     # return the list player if given player is in list, players are unique by id
     def player_in_list(self, player, p_list):
@@ -222,14 +217,15 @@ class Actions(object):
         current.health = received.health
 
     # players list may have a player who left the game, remove it
+    # TODO
     def remove_disconnected(self):
         if self.received_state == None:
             return
 
-        for p in self.received_state.players:
+        '''for p in self.received_state.players:
             print(p.id, end=', ')
-        print()
-        
+        print()'''
+         
         for player in self.players:
             match = self.player_in_list(player, self.received_state.players + [self.player])
             if match == False:
@@ -242,6 +238,8 @@ class Actions(object):
     def update(self):
         # update and draw sprites
         self.draw_missiles()
+
+        self.interface.draw_sprite(self.player)
         for player in self.players:
             self.interface.draw_sprite(player)
 
@@ -249,6 +247,6 @@ class Actions(object):
         self.player.slow()
 
         # set gamestate
-        self.gamestate.set_state(self.players, self.missile_buffer)
+        self.gamestate.set_state(self.player, self.players, self.missile_buffer)
 
         self.remove_disconnected()

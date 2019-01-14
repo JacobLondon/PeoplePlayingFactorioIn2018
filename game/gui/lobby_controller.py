@@ -56,9 +56,9 @@ class Lobby_Controller(Controller):
     def open_on_close(self):
 
         if self.connect:
-            from .game_controller import Game_Controller
-            game = Game_Controller(self.interface, self.client_address)
-            game.run()
+            from .connect_controller import Connect_Controller
+            connection = Connect_Controller(self.interface, self.client_address)
+            connection.run()
         elif self.back:
             from .menu_controller import Menu_Controller
             menu = Menu_Controller(self.interface)

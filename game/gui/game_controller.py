@@ -16,14 +16,16 @@ from game.utils.config import settings
 
 class Game_Controller(Controller):
 
-    def __init__(self, interface, client_address):
+    def __init__(self, interface, client):
         Controller.__init__(self, interface, settings.tick_rate)
 
-        # try to connect or timeout
+        self.client = client
+
+        '''# try to connect or timeout
         self.client = Client(client_address)
         if not self.client.success_connect:
             self.done = True
-            return
+            return'''
 
     def initialize_components(self):
 
@@ -63,16 +65,16 @@ class Game_Controller(Controller):
 
     def open_on_close(self):
 
-        # show timeout screen if connection fails
+        '''# show timeout screen if connection fails
         if not self.client.success_connect:
             from .timeout_controller import Timeout_Controller
             timeout = Timeout_Controller(self.interface)
             timeout.run()
         # go to main menu
-        else:
-            from .menu_controller import Menu_Controller
-            menu = Menu_Controller(self.interface)
-            menu.run()
+        else:'''
+        from .menu_controller import Menu_Controller
+        menu = Menu_Controller(self.interface)
+        menu.run()
 
     def escape_keydown(self):
         self.game_actions.paused = not self.game_actions.paused

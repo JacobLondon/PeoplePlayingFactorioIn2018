@@ -8,12 +8,17 @@ class Client(object):
 
     def __init__(self, client_address):
 
-        # attempt to connect the client to the address
+        self.client_address = client_address
+        self.connection_time = 0.
         self.success_connect = False
         self.timed_out = False
-        connect_thread = Thread(target=self.connect, args=(client_address,))
+        self.finished = False
+
+    def attempt_connection(self):
+        # attempt to connect the client to the address
+        connect_thread = Thread(target=self.connect, daemon=True)
         connect_thread.start()
-        timeout_thread = Thread(target=self.wait_for_timeout)
+        timeout_thread = Thread(target=self.wait_for_timeout, daemon=True)
         timeout_thread.start()
 
         # check to see if the connection is timing out
@@ -27,18 +32,22 @@ class Client(object):
         if self.success_connect:
             self.id = int(self.receive())
 
+        self.finished = True
+
     def wait_for_timeout(self):
-        for _ in range(settings.timeout):
-            time.sleep(1)
+        self.connection_time = 0.
+        while self.connection_time < settings.timeout:
+            time.sleep(0.01)
+            self.connection_time += 0.01
             if self.success_connect:
                 return
 
         self.timed_out = True
 
-    def connect(self, client_address):
+    def connect(self):
         try:
             # create and connect socket
-            self.socket = Socket(client_address=client_address)
+            self.socket = Socket(client_address=self.client_address)
             self.socket.connect_to_server()
             self.send = self.socket.send
             self.receive = self.socket.receive
