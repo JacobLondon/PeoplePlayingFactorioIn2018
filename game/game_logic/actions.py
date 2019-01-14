@@ -33,6 +33,7 @@ class Actions(object):
 
         # object which stores the data for the state
         self.gamestate = State(self.players, self.missile_buffer, self.controller.client.id)
+        self.received_state = None
 
         self.fire_ready = True
         self.move_ready = True
@@ -183,43 +184,56 @@ class Actions(object):
             self.receiving = False
 
         # convert json to object if there is data
-        received_state = json_to_obj(received_data)
-        if received_state is None:
+        self.received_state = json_to_obj(received_data)
+        if self.received_state is None:
             return
 
         # update state from other clients
-        if not self.gamestate.id == received_state.id:
+        if not self.gamestate.id == self.received_state.id:
 
             # load the new missiles
-            for m in received_state.missile_buffer:
+            for m in self.received_state.missile_buffer:
                 self.missiles.append(m)
 
-            # load the players
-            for player in received_state.players:
+        # load the players
+        for player in self.received_state.players:
+            # get player from players list which matches the received player
+            match = self.player_in_list(player, self.players)
 
-                # get player from players list which matches the received player
-                match = list(filter(lambda p: p.id == player.id, self.players))
+            # received player is not in players list, it should be
+            if match == False:
+                self.players.append(player)
 
-                # received player is not in players list, it should be
-                if not match:
-                    self.players.append(player)
-
-                # update the player to be the received player if not self player
-                elif not match[0].id == self.player.id:
-                    self.update_player(match[0], player)
-
-            # players list may have a player who left the game, remove it
-            # TODO
-            '''for player in self.players:
-                match = list(filter(lambda p: p.id == player.id, received_state.players))
-                if not match:
-                    self.players.remove(player)'''
+            # update the player to be the received player if not self player
+            elif not match.id == self.player.id:
+                self.update_player(match, player)
+    
+    # return the list player if given player is in list, players are unique by id
+    def player_in_list(self, player, p_list):
+        for match in p_list:
+            if match.id == player.id:
+                return match
+        return False
 
     # update player with the received player
     def update_player(self, current, received):
         current.loc = received.loc
         current.vel = received.vel
         current.health = received.health
+
+    # players list may have a player who left the game, remove it
+    def remove_disconnected(self):
+        if self.received_state == None:
+            return
+
+        for p in self.received_state.players:
+            print(p.id, end=', ')
+        print()
+        
+        for player in self.players:
+            match = self.player_in_list(player, self.received_state.players + [self.player])
+            if match == False:
+                self.players.remove(player)
 
     def tick(self):
         Thread(target=self.send).start()
@@ -236,3 +250,5 @@ class Actions(object):
 
         # set gamestate
         self.gamestate.set_state(self.players, self.missile_buffer)
+
+        self.remove_disconnected()
