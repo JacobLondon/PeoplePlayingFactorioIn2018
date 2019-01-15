@@ -3,7 +3,7 @@ from threading import Thread
 from game.pyngine.controller import Controller
 from game.pyngine.label import Label
 from game.pyngine.button import Button
-from game.pyngine.loading_bar import Bar
+from game.pyngine.progress_bar import Bar
 from game.pyngine.layout import Relative, Grid
 from game.pyngine.constants import Color, Anchor, Font
 
@@ -28,21 +28,23 @@ class Connect_Controller(Controller):
         Thread(target=self.client.attempt_connection).start()
 
         # track connection progress in this thread
-        while not self.client.timed_out and not self.client.success_connect:
-            self.loading_bar.increment(settings.timeout, self.client.connection_time)
-        self.loading_bar.complete()
+        while self.client.attempting:
+            self.progress_bar.increment(settings.timeout, self.client.connection_time)
+        self.progress_bar.complete()
 
         # wait until the client is finished connecting
         while not self.client.finished:
             pass
 
+        # load game_controller
         if self.client.success_connect:
             self.done = True
+        # let user return to main menu with timeout message
         else:
             self.timeout_label.visible = True
             self.return_button.visible = True
             self.connect_label.visible = False
-            self.loading_bar.visible = False
+            self.progress_bar.visible = False
 
     def initialize_components(self):
         self.connect_layout = Grid(self.background_panel, 16, 16)
@@ -52,11 +54,11 @@ class Connect_Controller(Controller):
         self.connect_label.font = Font.large
         self.connect_label.background = None
 
-        self.loading_bar = Bar(self)
-        self.loading_bar.loc = self.connect_layout.get_pixel(9, 9)
-        self.loading_bar.anchor = Anchor.center
-        self.loading_bar.font = Font.large
-        self.loading_bar.width = settings.resolution[0] / 2
+        self.progress_bar = Bar(self)
+        self.progress_bar.loc = self.connect_layout.get_pixel(9, 9)
+        self.progress_bar.anchor = Anchor.center
+        self.progress_bar.font = Font.large
+        self.progress_bar.width = settings.resolution[0] / 2
 
         # display to the user the connection has timed out
         timeout_text = 'Connection timed out.'
@@ -73,6 +75,7 @@ class Connect_Controller(Controller):
         self.return_button.loc = self.timeout_layout.get_pixel(17, 19)
         self.return_button.anchor = Anchor.center
         self.return_button.visible = False
+        self.return_button.action = self.return_button_clicked
 
     def open_on_close(self):
         # show timeout screen if connection fails
@@ -84,10 +87,6 @@ class Connect_Controller(Controller):
             from .game_controller import Game_Controller
             game = Game_Controller(self.interface, self.client)
             game.run()
-
-    def l_click_down(self):
-        if self.return_button.focused:
-            self.return_button_clicked()
 
     def return_button_clicked(self):
         self.done = True

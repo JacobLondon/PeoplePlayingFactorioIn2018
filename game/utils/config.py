@@ -13,6 +13,7 @@ class Settings(object):
         self.encoding = settings['encoding']
         self.disconnect = settings['disconnect']
         self.timeout = settings['timeout']                  # num of seconds for the client connection to time out
+        self.timeout_increment = settings['timeout_increment']
         self.tick_rate = settings['tick_rate']
         self.refresh_rate = settings['refresh_rate']
         self.num_clients = settings['num_clients']          # number of connections per server

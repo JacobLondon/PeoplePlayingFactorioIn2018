@@ -9,9 +9,12 @@ class Client(object):
     def __init__(self, client_address):
 
         self.client_address = client_address
+
+        # measuring/controlling timeout
         self.connection_time = 0.
         self.success_connect = False
         self.timed_out = False
+        self.attempting = True
         self.finished = False
 
     def attempt_connection(self):
@@ -21,9 +24,10 @@ class Client(object):
         timeout_thread = Thread(target=self.wait_for_timeout, daemon=True)
         timeout_thread.start()
 
-        # check to see if the connection is timing out
+        # attempt to connect until connection or failure
         while not self.timed_out and not self.success_connect:
             pass
+        self.attempting = False
 
         connect_thread.join()
         timeout_thread.join()
@@ -34,11 +38,12 @@ class Client(object):
 
         self.finished = True
 
+    # count until connection
     def wait_for_timeout(self):
         self.connection_time = 0.
         while self.connection_time < settings.timeout:
-            time.sleep(0.01)
-            self.connection_time += 0.01
+            time.sleep(settings.timeout_increment)
+            self.connection_time += settings.timeout_increment
             if self.success_connect:
                 return
 

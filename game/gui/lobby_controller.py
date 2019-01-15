@@ -32,10 +32,12 @@ class Lobby_Controller(Controller):
         self.join_button = Button(self, 'Join')
         self.join_button.loc = self.lobby_layout.get_pixel(32, 30)
         self.join_button.anchor = Anchor.northeast
+        self.join_button.action = self.join_button_clicked
 
         # button to go back to the main menu
         self.back_button = Button(self, 'Back')
         self.back_button.loc = self.lobby_layout.get_pixel(2, 30)
+        self.back_button.action = self.back_button_clicked
 
         # textbox to enter the ip address to connect to
         self.ip_textbox = Textbox(self)
@@ -63,12 +65,6 @@ class Lobby_Controller(Controller):
             from .menu_controller import Menu_Controller
             menu = Menu_Controller(self.interface)
             menu.run()
-
-    def l_click_down(self):
-        if self.join_button.focused:
-            self.join_button_clicked()
-        elif self.back_button.focused:
-            self.back_button_clicked()
 
     def join_button_clicked(self):
         self.done = True

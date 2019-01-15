@@ -23,22 +23,18 @@ class Menu_Controller(Controller):
         self.start_button = Button(self, 'Multiplayer')
         self.start_button.loc = self.title_layout.get_pixel(5, 6)
         self.start_button.anchor = Anchor.center
+        self.start_button.action = self.start_button_clicked
 
         self.quit_button = Button(self, 'Quit')
         self.quit_button.loc = self.title_layout.get_pixel(5, 7)
         self.quit_button.anchor = Anchor.center
         self.quit_button.width = self.start_button.width
+        self.quit_button.action = self.quit_button_clicked
 
     def open_on_close(self):
         from .lobby_controller import Lobby_Controller
         lobby = Lobby_Controller(self.interface)
         lobby.run()
-
-    def l_click_down(self):
-        if self.start_button.focused:
-            self.start_button_clicked()
-        elif self.quit_button.focused:
-            self.quit_button_clicked()
 
     def start_button_clicked(self):
         self.done = True

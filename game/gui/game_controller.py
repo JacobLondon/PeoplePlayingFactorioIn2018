@@ -21,12 +21,6 @@ class Game_Controller(Controller):
 
         self.client = client
 
-        '''# try to connect or timeout
-        self.client = Client(client_address)
-        if not self.client.success_connect:
-            self.done = True
-            return'''
-
     def initialize_components(self):
 
         # defined by where the play takes place
@@ -64,14 +58,6 @@ class Game_Controller(Controller):
         self.client.handshake_close()
 
     def open_on_close(self):
-
-        '''# show timeout screen if connection fails
-        if not self.client.success_connect:
-            from .timeout_controller import Timeout_Controller
-            timeout = Timeout_Controller(self.interface)
-            timeout.run()
-        # go to main menu
-        else:'''
         from .menu_controller import Menu_Controller
         menu = Menu_Controller(self.interface)
         menu.run()
