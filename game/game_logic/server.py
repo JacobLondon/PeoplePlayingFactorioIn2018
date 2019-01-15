@@ -18,20 +18,20 @@ class Server(object):
     def await_clients(self):
 
         while True:
-            for num in range(settings.num_players):
+            for id in range(settings.num_players):
                 client = self.server.accept()
                 client_address = client.accepted_addr
                 print("%s:%s has connected." % client_address)
-                client.send(num)
+                client.send(id)
 
                 # add client address to addresses array
                 self.addresses[client] = client_address
 
                 # start thread for client
-                Thread(target=self.handle_client, args=(client,), daemon=True).start()
+                Thread(target=self.handle_client, args=(client, id), daemon=True).start()
 
     # handle data transmission for a given client
-    def handle_client(self, client):
+    def handle_client(self, client, id):
 
         message = b''
 
@@ -59,16 +59,19 @@ class Server(object):
             pass
 
         finally:
+            # inform other clients who disconnected
+            self.broadcast(bytes(settings.disconnect + str(id), settings.encoding))
+            # stop sending data to the client
             client.close()
-            print("%s:%s has disconnected." % self.addresses[client])
+            #print("%s:%s has disconnected." % self.addresses[client])
             del self.clients[client]
 
     # send binary data to all clients
-    def broadcast(self, message, sender):
+    def broadcast(self, message, sender=None):
         
         # send message to all other clients
         for client in self.clients:
-            if self.clients[client] != sender:
+            if sender is None or self.clients[client] != sender:
                 client.send(message)
 
     # prepare server

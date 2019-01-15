@@ -32,7 +32,7 @@ class Actions(object):
         self.pm_vector = Vector2()
 
         # object which stores the data for the state
-        self.gamestate = State(self.player, self.players, self.missile_buffer, self.controller.client.id)
+        self.gamestate = State(self.players, self.missile_buffer, self.controller.client.id)
         self.received_state = None
 
         self.fire_ready = True
@@ -174,6 +174,7 @@ class Actions(object):
 
         self.receiving = True
         try:
+            # get the data as a string from the server
             received_data = self.controller.client.receive()
         # the host was forcibly closed, end the program
         except Exception as e:
@@ -185,16 +186,26 @@ class Actions(object):
         finally:
             self.receiving = False
 
+        # remove a player who disconnects
+        if settings.disconnect in received_data:
+            id_to_remove = int(settings.disconnect[len(settings.disconnect):])
+            print('my id is:', id_to_remove)
+
         # convert json to object if there is data
         self.received_state = json_to_obj(received_data)
         if self.received_state is None:
             return
 
-        match = self.player_in_list(self.received_state.player, self.players)
-        if match == False:
-            self.players.append(self.received_state.player)
-        elif not match.id == self.player.id:
-            self.update_player(match, self.received_state.player)
+        self.load_gamestate()
+    
+    def load_gamestate(self):
+        for player in self.received_state.players:
+
+            match = self.player_in_list(check_for=player, in_list=self.players)
+            if match == False:
+                self.players.append(player)
+            elif not match.id == self.player.id:
+                self.update_player(current=match, received=player)
 
         # update state from other clients
         if not self.gamestate.id == self.received_state.id:
@@ -202,34 +213,36 @@ class Actions(object):
             # load the new missiles
             for m in self.received_state.missile_buffer:
                 self.missiles.append(m)
-    
+
     # return the list player if given player is in list, players are unique by id
-    def player_in_list(self, player, p_list):
-        for match in p_list:
-            if match.id == player.id:
+    def player_in_list(self, check_for=None, in_list=None):
+        if check_for is None or in_list is None:
+            return
+        
+        # look for a matching id
+        for match in in_list:
+            if match.id == check_for.id:
                 return match
         return False
 
     # update player with the received player
-    def update_player(self, current, received):
+    def update_player(self, current=None, received=None):
+        if current is None or received is None:
+            return
         current.loc = received.loc
         current.vel = received.vel
         current.health = received.health
 
     # players list may have a player who left the game, remove it
     # TODO
-    def remove_disconnected(self):
+    '''def remove_disconnected(self):
         if self.received_state == None:
             return
-
-        '''for p in self.received_state.players:
-            print(p.id, end=', ')
-        print()'''
          
         for player in self.players:
             match = self.player_in_list(player, self.received_state.players + [self.player])
             if match == False:
-                self.players.remove(player)
+                self.players.remove(player)'''
 
     def tick(self):
         Thread(target=self.send).start()
@@ -239,7 +252,6 @@ class Actions(object):
         # update and draw sprites
         self.draw_missiles()
 
-        self.interface.draw_sprite(self.player)
         for player in self.players:
             self.interface.draw_sprite(player)
 
@@ -247,6 +259,6 @@ class Actions(object):
         self.player.slow()
 
         # set gamestate
-        self.gamestate.set_state(self.player, self.players, self.missile_buffer)
+        self.gamestate.set_state(self.players, self.missile_buffer)
 
-        self.remove_disconnected()
+        '''self.remove_disconnected()'''

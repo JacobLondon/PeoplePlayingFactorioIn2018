@@ -28,14 +28,12 @@ def json_to_obj(data):
 
 class State(object):
 
-    def __init__(self, player, players, missile_buffer, id):
+    def __init__(self, players, missile_buffer, id):
         self.id = id
-        self.player = player
         self.players = players
         self.missile_buffer = missile_buffer
 
-    def set_state(self, player, players, missile_buffer):
-        self.player = player
+    def set_state(self, players, missile_buffer):
         self.players = players
         self.missile_buffer = missile_buffer
 
