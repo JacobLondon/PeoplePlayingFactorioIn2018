@@ -51,23 +51,6 @@ class Actions(object):
         # randomly place the player in the game
         self.player.loc = (random.randint(left, right), random.randint(top, bot))
 
-    def draw_missiles(self):
-    
-        # update each missile
-        for m in self.missiles:
-
-            # update to next pos
-            delta_x = m.dir[0] * settings.missile_vel
-            delta_y = m.dir[1] * settings.missile_vel
-            m.loc = (m.loc[0] + delta_x, m.loc[1] + delta_y)
-
-            # remove if it went off the game panel
-            if not self.game_panel.within(m.loc[0], m.loc[1]):
-                self.missiles.remove(m)
-                continue
-
-            self.interface.draw_sprite(m)
-
     def move_cooldown(self):
         time.sleep(settings.move_cooldown)
         self.move_ready = True
@@ -136,7 +119,7 @@ class Actions(object):
         tail = self.player.loc
         # correct for top left corner
         x = self.controller.mouse_x - self.interface.tile_width / 2
-        y = self.controller.mouse_y- self.interface.tile_height / 2
+        y = self.controller.mouse_y - self.interface.tile_height / 2
         head = (x, y)
         self.pm_vector.set(head, tail)
 
@@ -151,6 +134,23 @@ class Actions(object):
         self.fire_ready = False
         Thread(target=self.shoot_cooldown).start()        
 
+    def draw_missiles(self):
+    
+        # update each missile
+        for m in self.missiles:
+
+            # update to next pos
+            delta_x = m.dir[0] * settings.missile_vel
+            delta_y = m.dir[1] * settings.missile_vel
+            m.loc = (m.loc[0] + delta_x, m.loc[1] + delta_y)
+
+            # remove if it went off the game panel
+            if not self.game_panel.within(m.loc[0], m.loc[1]):
+                self.missiles.remove(m)
+                continue
+
+            self.interface.draw_sprite(m)
+
     def send(self):
 
         # send gamestate as a json
@@ -158,8 +158,7 @@ class Actions(object):
             self.controller.client.send(self.gamestate.to_json())
         # the host was forcibly closed, end the program
         except Exception as e:
-            print('failed to send')
-            print(e)
+            print('failed to send\n', e)
             self.done = True
             return
 
@@ -178,8 +177,7 @@ class Actions(object):
             received_data = self.controller.client.receive()
         # the host was forcibly closed, end the program
         except Exception as e:
-            print('failed to receive')
-            print(e)
+            print('failed to receive\n', e)
             self.done = True
             self.receiving = False
             return
@@ -246,13 +244,14 @@ class Actions(object):
 
     def update(self):
         # update and draw sprites
-        self.draw_missiles()
-
-        for player in self.players:
-            self.interface.draw_sprite(player)
-
         self.move()
         self.player.slow()
 
         # set gamestate
         self.gamestate.set_state(self.players, self.missile_buffer)
+
+    def draw(self):
+        self.draw_missiles()
+
+        for player in self.players:
+            self.interface.draw_sprite(player)

@@ -24,13 +24,13 @@ class Game_Controller(Controller):
     def initialize_components(self):
 
         # defined by where the play takes place
-        self.game_panel = Panel(self)
+        self.game_panel = Panel(self, in_foreground=False)
         self.game_panel.width = settings.resolution[0]
         self.game_panel.height = settings.resolution[1]
 
         # center label shows info in the center of the game panel
         self.relative_layout = Relative(self.game_panel)
-        self.center_label = Label(self, 'Press esc to pause')
+        self.center_label = Label(self, 'Press esc to pause', in_foreground=False)
         self.center_label.loc = self.relative_layout.center
         self.center_label.anchor = Anchor.center
 
@@ -53,6 +53,9 @@ class Game_Controller(Controller):
     def update_actions(self):
         self.game_actions.update()
         self.pause_label.visible = self.game_actions.paused
+
+    def draw_midground(self):
+        self.game_actions.draw()
 
     def close_actions(self):
         self.client.handshake_close()

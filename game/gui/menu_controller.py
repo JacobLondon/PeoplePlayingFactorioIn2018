@@ -3,22 +3,27 @@ from game.pyngine.label import Label
 from game.pyngine.button import Button
 from game.pyngine.layout import Grid
 from game.pyngine.controller import Controller
+from game.pyngine.image import Image
 
 from game.utils.config import settings
+
+import pygame
 
 class Menu_Controller(Controller):
 
     def __init__(self, interface):
         Controller.__init__(self, interface)
 
+    def initialize_surfaces(self):
+        self.logo_layout = Grid(self.background_panel, 8, 8)
+        self.logo = Image('game/assets/ppfi2018.png')
+        self.logo.loc = self.logo_layout.get_pixel(5, 4)
+        self.logo.anchor = Anchor.center
+        self.logo.set_anchor()
+
     def initialize_components(self):
 
         self.title_layout = Grid(self.background_panel, 8, 8)
-
-        self.title_label = Label(self, 'People Playing Factorio in 2018')
-        self.title_label.loc = self.title_layout.get_pixel(5, 5)
-        self.title_label.anchor = Anchor.center
-        self.title_label.font = Font.menu
 
         self.start_button = Button(self, 'Multiplayer')
         self.start_button.loc = self.title_layout.get_pixel(5, 6)
@@ -42,3 +47,6 @@ class Menu_Controller(Controller):
     def quit_button_clicked(self):
         self.done = True
         self.quit = True
+        
+    def draw_foreground(self):
+        self.logo.draw(self.interface.display)

@@ -21,7 +21,6 @@ class Server(object):
             for id in range(settings.num_players):
                 client = self.server.accept()
                 client_address = client.accepted_addr
-                #print("%s:%s has connected." % client_address)
                 client.send(id)
 
                 # add client address to addresses array
@@ -64,7 +63,7 @@ class Server(object):
                 self.broadcast(settings.disconnect + str(id))
             except Socket.error as e:
                 pass
-                
+
             # stop sending data to the client
             client.close()
             del self.clients[client]
