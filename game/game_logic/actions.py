@@ -1,4 +1,4 @@
-import numpy as np, time, copy, random
+import numpy as np, time, copy, random, re
 from threading import Thread
 
 from game.pyngine.constants import Color, Dir
@@ -188,20 +188,27 @@ class Actions(object):
 
         # remove a player who disconnects
         if settings.disconnect in received_data:
-            id_to_remove = int(settings.disconnect[len(settings.disconnect):])
-            print('my id is:', id_to_remove)
+
+            # get just the id from the disconnect message
+            id_to_remove = int(re.sub('\D', '', received_data))
+            match = self.player_in_list(check_id=id_to_remove, in_list=self.players)
+            
+            # player was found, remove it
+            if match is not False:
+                self.players.remove(match)
 
         # convert json to object if there is data
         self.received_state = json_to_obj(received_data)
         if self.received_state is None:
             return
 
+        # data was successfully received and decoded, so load it
         self.load_gamestate()
     
     def load_gamestate(self):
         for player in self.received_state.players:
 
-            match = self.player_in_list(check_for=player, in_list=self.players)
+            match = self.player_in_list(check_id=player.id, in_list=self.players)
             if match == False:
                 self.players.append(player)
             elif not match.id == self.player.id:
@@ -215,13 +222,13 @@ class Actions(object):
                 self.missiles.append(m)
 
     # return the list player if given player is in list, players are unique by id
-    def player_in_list(self, check_for=None, in_list=None):
-        if check_for is None or in_list is None:
+    def player_in_list(self, check_id=None, in_list=None):
+        if check_id is None or in_list is None:
             return
-        
-        # look for a matching id
+
+        # given player id, return player with matching id
         for match in in_list:
-            if match.id == check_for.id:
+            if match.id == check_id:
                 return match
         return False
 
@@ -232,17 +239,6 @@ class Actions(object):
         current.loc = received.loc
         current.vel = received.vel
         current.health = received.health
-
-    # players list may have a player who left the game, remove it
-    # TODO
-    '''def remove_disconnected(self):
-        if self.received_state == None:
-            return
-         
-        for player in self.players:
-            match = self.player_in_list(player, self.received_state.players + [self.player])
-            if match == False:
-                self.players.remove(player)'''
 
     def tick(self):
         Thread(target=self.send).start()
@@ -260,5 +256,3 @@ class Actions(object):
 
         # set gamestate
         self.gamestate.set_state(self.players, self.missile_buffer)
-
-        '''self.remove_disconnected()'''

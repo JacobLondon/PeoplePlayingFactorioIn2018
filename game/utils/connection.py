@@ -35,7 +35,10 @@ class Socket():
         return recv
 
     def handshake_close(self):
-        self.send(settings.disconnect)
+        try:
+            self.send(settings.disconnect)
+        except socket_error as e:
+            pass
         self.close()
 
     def close(self):
