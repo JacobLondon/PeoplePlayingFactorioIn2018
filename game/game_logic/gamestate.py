@@ -6,14 +6,14 @@ from game.game_logic.vector import Vector2
 # turn json string to object
 def _json_object_hook(d):
 
-    if all([key in d for key  in ['id', 'players', 'missile_buffer']]):
+    if set(d).issuperset(set(['id', 'players', 'missile_buffer'])):
         return State(**d)
 
-    elif all([key in d for key in ['color', 'loc', 'dir']]):
-        return Missile(**d)
+    elif set(d).issuperset(set(['id', 'color', 'loc', 'health', 'angle'])):
+        return Player(d['id'], d['color'], d['loc'], d['health'], d['angle'])
 
-    elif all([key in d for key in ['id', 'color', 'loc', 'health']]):
-        return Player(**d)
+    elif set(d).issuperset(set(['color', 'loc', 'angle'])):
+        return Missile(d['color'], d['loc'], d['angle'])
 
     elif all([key in d for key in ['head', 'tail', 'angle', 'mag', 'unit']]):
         return Vector2(**d)

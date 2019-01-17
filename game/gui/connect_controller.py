@@ -11,7 +11,7 @@ from game.game_logic.client import Client
 
 from game.utils.config import settings
 
-class Connect_Controller(Controller):
+class ConnectController(Controller):
 
     def __init__(self, interface, client_address):
         Controller.__init__(self, interface, settings.tick_rate)
@@ -36,7 +36,7 @@ class Connect_Controller(Controller):
         while not self.client.finished:
             pass
 
-        # load game_controller
+        # load game controller
         if self.client.success_connect:
             self.done = True
         # let user return to main menu with timeout message
@@ -80,12 +80,12 @@ class Connect_Controller(Controller):
     def open_on_close(self):
         # show timeout screen if connection fails
         if not self.client.success_connect:
-            from .menu_controller import Menu_Controller
-            menu = Menu_Controller(self.interface)
+            from .menu_controller import MenuController
+            menu = MenuController(self.interface)
             menu.run()
         else:
-            from .game_controller import Game_Controller
-            game = Game_Controller(self.interface, self.client)
+            from .game_controller import GameController
+            game = GameController(self.interface, self.client)
             game.run()
 
     def return_button_clicked(self):

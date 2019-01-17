@@ -1,23 +1,31 @@
 import random
 
 from game.pyngine.constants import Color, Dir
+from game.pyngine.screen_object import ScreenObject
+from game.pyngine.image import Image
 
 from game.utils.config import settings
 
-class GameObject(object):
+class GameObject(ScreenObject):
 
-    def __init__(self, color=Color.black, loc=(0, 0)):
+    def __init__(self, color=None, loc=(0, 0), angle=(0., 0.)):
+        ScreenObject.__init__(self)
         self.color = color
         self.loc = loc
 
+        self.path = None
+        self.angle = angle
+
 class Player(GameObject):
 
-    def __init__(self, id=0, color=Color.blue, loc=(0, 0), vel=[0., 0.], health=0):
-        GameObject.__init__(self, color=color, loc=loc)
+    def __init__(self, id=0, color=None, loc=(0, 0), vel=[0., 0.], health=0, angle=(0., 0.)):
+        GameObject.__init__(self, color=color, loc=loc, angle=angle)
         self.id = id
         self.vel = vel
         self.health = health
-        self.color = (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
+        if self.color is None:
+            self.color = (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
+        self.path = 'game/assets/player.png'
 
     # reduce the velocity by the friction amount
     def slow(self):
@@ -29,6 +37,7 @@ class Player(GameObject):
 
 class Missile(GameObject):
 
-    def __init__(self, color=Color.green, loc=(0, 0), dir=(0., 0.)):
-        GameObject.__init__(self, color=color, loc=loc)
-        self.dir = dir
+    def __init__(self, color=Color.green, loc=(0, 0), angle=(0., 0.)):
+        GameObject.__init__(self, color=color, loc=loc, angle=angle)
+
+        self.path = 'game/assets/missile.png'

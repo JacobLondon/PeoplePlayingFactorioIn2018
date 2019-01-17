@@ -10,7 +10,7 @@ from game.pyngine.constants import Color, Anchor, Font
 
 from game.utils.config import settings
 
-class Lobby_Controller(Controller):
+class LobbyController(Controller):
 
     def __init__(self, interface):
         Controller.__init__(self, interface)
@@ -23,8 +23,7 @@ class Lobby_Controller(Controller):
         # info about the lobby label
         self.lobby_layout = Grid(self.background_panel, 32, 32)
         self.lobby_label = Label(self, 'Lobby')
-        self.lobby_label.loc = self.lobby_layout.get_pixel(4, 3)
-        self.lobby_label.anchor = Anchor.center
+        self.lobby_label.loc = self.lobby_layout.get_pixel(3, 2)
         self.lobby_label.font = Font.menu
         self.lobby_label.background = None
 
@@ -58,12 +57,12 @@ class Lobby_Controller(Controller):
     def open_on_close(self):
 
         if self.connect:
-            from .connect_controller import Connect_Controller
-            connection = Connect_Controller(self.interface, self.client_address)
+            from .connect_controller import ConnectController
+            connection = ConnectController(self.interface, self.client_address)
             connection.run()
         elif self.back:
-            from .menu_controller import Menu_Controller
-            menu = Menu_Controller(self.interface)
+            from .menu_controller import MenuController
+            menu = MenuController(self.interface)
             menu.run()
 
     def join_button_clicked(self):

@@ -1,7 +1,8 @@
-import numpy as np, time, copy, random, re
+import numpy as np, time, copy, random, re, pygame
 from threading import Thread
 
 from game.pyngine.constants import Color, Dir
+from game.pyngine.image import Image
 
 from game.game_logic.game_objects import Player, Missile
 from game.game_logic.client import Client
@@ -19,10 +20,11 @@ class Actions(object):
         self.game_panel = controller.game_panel
 
         self.players = []
+        self.player_images = {}
 
         # load players
         self.player = Player(id=self.controller.client.id)
-        self.players.append(self.player)
+        self.load_player(self.player)
 
         # hold the missiles until tick, then empty the buffer
         self.missiles = []
@@ -115,17 +117,9 @@ class Actions(object):
         if not self.fire_ready or self.paused:
             return
 
-        # update the player mouse vector
-        tail = self.player.loc
-        # correct for top left corner
-        x = self.controller.mouse_x - self.interface.tile_width / 2
-        y = self.controller.mouse_y - self.interface.tile_height / 2
-        head = (x, y)
-        self.pm_vector.set(head, tail)
-
          # make a missile and put it in the missile list
-        dir = (self.pm_vector.unit[0], self.pm_vector.unit[1])
-        missile = Missile(dir=dir)
+        angle = (self.pm_vector.unit[0], self.pm_vector.unit[1])
+        missile = Missile(angle=angle)
         missile.loc = (self.player.loc[0], self.player.loc[1])
         self.missiles.append(missile)
         self.missile_buffer.append(copy.deepcopy(missile))
@@ -140,8 +134,8 @@ class Actions(object):
         for m in self.missiles:
 
             # update to next pos
-            delta_x = m.dir[0] * settings.missile_vel
-            delta_y = m.dir[1] * settings.missile_vel
+            delta_x = m.angle[0] * settings.missile_vel
+            delta_y = m.angle[1] * settings.missile_vel
             m.loc = (m.loc[0] + delta_x, m.loc[1] + delta_y)
 
             # remove if it went off the game panel
@@ -193,6 +187,7 @@ class Actions(object):
             
             # player was found, remove it
             if match is not False:
+                del self.player_images[match.id]
                 self.players.remove(match)
 
         # convert json to object if there is data
@@ -208,7 +203,7 @@ class Actions(object):
 
             match = self.player_in_list(check_id=player.id, in_list=self.players)
             if match == False:
-                self.players.append(player)
+                self.load_player(player)
             elif not match.id == self.player.id:
                 self.update_player(current=match, received=player)
 
@@ -247,6 +242,14 @@ class Actions(object):
         self.move()
         self.player.slow()
 
+        # update the player mouse vector
+        tail = self.player.loc
+        # correct for top left corner
+        x = self.controller.mouse_x - self.interface.tile_width / 2
+        y = self.controller.mouse_y - self.interface.tile_height / 2
+        head = (x, y)
+        self.pm_vector.set(head, tail)
+
         # set gamestate
         self.gamestate.set_state(self.players, self.missile_buffer)
 
@@ -254,4 +257,16 @@ class Actions(object):
         self.draw_missiles()
 
         for player in self.players:
-            self.interface.draw_sprite(player)
+            #self.interface.draw_sprite(player)
+            self.draw_player(player)
+
+    def load_player(self, player):
+        self.players.append(player)
+        self.player_images[player.id] = Image(self.player.path)
+        self.player_images[player.id].scale_to(self.interface.tile_width, self.interface.tile_height)
+        self.player_images[player.id].fill(player.color)
+
+    def draw_player(self, player):
+        self.player_images[player.id].loc = player.loc
+        self.player_images[player.id].draw(self.interface.display)
+        

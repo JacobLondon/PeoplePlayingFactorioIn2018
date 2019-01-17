@@ -1,2 +1,2 @@
-from .menu_controller import Menu_Controller as Menu
-from .lobby_controller import Lobby_Controller as Lobby
+from .menu_controller import MenuController as Menu
+from .lobby_controller import LobbyController as Lobby

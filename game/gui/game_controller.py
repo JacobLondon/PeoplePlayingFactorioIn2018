@@ -14,7 +14,7 @@ from game.game_logic.actions import Actions
 
 from game.utils.config import settings
 
-class Game_Controller(Controller):
+class GameController(Controller):
 
     def __init__(self, interface, client):
         Controller.__init__(self, interface, settings.tick_rate)
@@ -61,8 +61,8 @@ class Game_Controller(Controller):
         self.client.handshake_close()
 
     def open_on_close(self):
-        from .menu_controller import Menu_Controller
-        menu = Menu_Controller(self.interface)
+        from .menu_controller import MenuController
+        menu = MenuController(self.interface)
         menu.run()
 
     def escape_keydown(self):
