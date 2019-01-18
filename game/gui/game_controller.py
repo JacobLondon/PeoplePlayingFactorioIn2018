@@ -70,16 +70,16 @@ class GameController(Controller):
         self.key_presses[pygame.K_ESCAPE] = False
 
     def w_keydown(self):
-        self.game_actions.add_velocity(Dir.up)
+        self.game_actions.add_vel(Dir.up)
 
     def a_keydown(self):
-        self.game_actions.add_velocity(Dir.left)
+        self.game_actions.add_vel(Dir.left)
 
     def s_keydown(self):
-        self.game_actions.add_velocity(Dir.down)
+        self.game_actions.add_vel(Dir.down)
 
     def d_keydown(self):
-        self.game_actions.add_velocity(Dir.right)
+        self.game_actions.add_vel(Dir.right)
 
     def l_click_down(self):
         self.game_actions.shoot()
@@ -97,10 +97,10 @@ class GameController(Controller):
 
     # custom actions for moving diagnally
     def wd_keydown(self):
-        self.game_actions.add_velocity(Dir.up_right)
+        self.game_actions.add_vel(Dir.up_right)
     def sd_keydown(self):
-        self.game_actions.add_velocity(Dir.down_right)
+        self.game_actions.add_vel(Dir.down_right)
     def sa_keydown(self):
-        self.game_actions.add_velocity(Dir.down_left)
+        self.game_actions.add_vel(Dir.down_left)
     def wa_keydown(self):
-        self.game_actions.add_velocity(Dir.up_left)
+        self.game_actions.add_vel(Dir.up_left)

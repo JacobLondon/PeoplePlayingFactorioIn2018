@@ -4,9 +4,10 @@ from threading import Thread
 from game.pyngine.constants import Color, Dir
 from game.pyngine.image import Image
 
-from game.game_logic.game_objects import Player, Missile
+from game.game_logic.game_objects import Player, PlayerInfo, Missile, MissileInfo
 from game.game_logic.client import Client
 from game.game_logic.gamestate import State, json_to_obj
+from game.game_logic.game_connection import GameConnection
 from game.game_logic.vector import Vector2
 
 from game.utils.config import settings
@@ -19,8 +20,10 @@ class Actions(object):
         self.interface = controller.interface
         self.game_panel = controller.game_panel
 
-        self.players = []
-        self.player_images = {}
+        # send/receive game data to/from the server
+        self.connection = GameConnection(self, controller)
+
+        self.player_infos = []
 
         # load players
         self.player = Player(id=self.controller.client.id)
@@ -34,13 +37,11 @@ class Actions(object):
         self.pm_vector = Vector2()
 
         # object which stores the data for the state
-        self.gamestate = State(self.players, self.missile_buffer, self.controller.client.id)
-        self.received_state = None
+        self.gamestate = State([], self.missile_buffer, self.controller.client.id)
 
         self.fire_ready = True
         self.move_ready = True
         self.paused = False
-        self.receiving = False
 
     def setup(self):
 
@@ -61,52 +62,14 @@ class Actions(object):
         time.sleep(settings.shoot_cooldown)
         self.fire_ready = True
 
-    # move the player based on their velocity
-    def move(self):
-        x = self.player.loc[0]
-        dx = self.player.vel[0]
-        y = self.player.loc[1]
-        dy = self.player.vel[1]
-
-        if not self.game_panel.within(x + dx, y):
-            dx = 0
-            self.player.vel[0] = 0
-        if not self.game_panel.within(x, y + dy):
-            dy = 0
-            self.player.vel[1] = 0
-
-        self.player.loc = (x + dx, y + dy)
-
     # give the player directional velocity
-    def add_velocity(self, direction):
+    def add_vel(self, direction):
 
         # only move if cooldown and not paused
         if not self.move_ready or self.paused:
             return
 
-        # LRUD movement
-        if direction == Dir.left:
-            self.player.vel[0] = self.player.vel[0] - settings.player_vel
-        elif direction == Dir.right:
-            self.player.vel[0] = self.player.vel[0] + settings.player_vel
-        elif direction == Dir.up:
-            self.player.vel[1] = self.player.vel[1] - settings.player_vel
-        elif direction == Dir.down:
-            self.player.vel[1] = self.player.vel[1] + settings.player_vel
-
-        # diagnal movement
-        elif direction == Dir.up_right:
-            self.player.vel[0] = self.player.vel[0] + settings.player_vel
-            self.player.vel[1] = self.player.vel[1] - settings.player_vel
-        elif direction == Dir.down_right:
-            self.player.vel[0] = self.player.vel[0] + settings.player_vel
-            self.player.vel[1] = self.player.vel[1] + settings.player_vel
-        elif direction == Dir.down_left:
-            self.player.vel[0] = self.player.vel[0] - settings.player_vel
-            self.player.vel[1] = self.player.vel[1] + settings.player_vel
-        elif direction == Dir.up_left:
-            self.player.vel[0] = self.player.vel[0] - settings.player_vel
-            self.player.vel[1] = self.player.vel[1] - settings.player_vel
+        self.player.speed_up(direction)
 
         self.move_ready = False
         Thread(target=self.move_cooldown).start()
@@ -120,7 +83,12 @@ class Actions(object):
          # make a missile and put it in the missile list
         angle = (self.pm_vector.unit[0], self.pm_vector.unit[1])
         missile = Missile(angle=angle)
-        missile.loc = (self.player.loc[0], self.player.loc[1])
+
+        # spawn the missile away from the player
+        startx = self.player.loc[0] + self.interface.tile_width*angle[0]
+        starty = self.player.loc[1] + self.interface.tile_height*angle[1]
+        missile.loc = (startx, starty)
+            
         self.missiles.append(missile)
         self.missile_buffer.append(copy.deepcopy(missile))
 
@@ -128,119 +96,15 @@ class Actions(object):
         self.fire_ready = False
         Thread(target=self.shoot_cooldown).start()        
 
-    def draw_missiles(self):
-    
-        # update each missile
-        for m in self.missiles:
-
-            # update to next pos
-            delta_x = m.angle[0] * settings.missile_vel
-            delta_y = m.angle[1] * settings.missile_vel
-            m.loc = (m.loc[0] + delta_x, m.loc[1] + delta_y)
-
-            # remove if it went off the game panel
-            if not self.game_panel.within(m.loc[0], m.loc[1]):
-                self.missiles.remove(m)
-                continue
-
-            self.interface.draw_sprite(m)
-
-    def send(self):
-
-        # send gamestate as a json
-        try:
-            self.controller.client.send(self.gamestate.to_json())
-        # the host was forcibly closed, end the program
-        except Exception as e:
-            print('failed to send\n', e)
-            self.done = True
-            return
-
-        # empty the buffer because it will have been sent
-        self.missile_buffer = []
-
-    def receive(self):
-
-        # do not try to receive more if there is nothing to receive
-        if self.receiving:
-            return
-
-        self.receiving = True
-        try:
-            # get the data as a string from the server
-            received_data = self.controller.client.receive()
-        # the host was forcibly closed, end the program
-        except Exception as e:
-            print('failed to receive\n', e)
-            self.done = True
-            self.receiving = False
-            return
-        finally:
-            self.receiving = False
-
-        # remove a player who disconnects
-        if settings.disconnect in received_data:
-
-            # get just the id from the disconnect message
-            id_to_remove = int(re.sub('\D', '', received_data))
-            match = self.player_in_list(check_id=id_to_remove, in_list=self.players)
-            
-            # player was found, remove it
-            if match is not False:
-                del self.player_images[match.id]
-                self.players.remove(match)
-
-        # convert json to object if there is data
-        self.received_state = json_to_obj(received_data)
-        if self.received_state is None:
-            return
-
-        # data was successfully received and decoded, so load it
-        self.load_gamestate()
-    
-    def load_gamestate(self):
-        for player in self.received_state.players:
-
-            match = self.player_in_list(check_id=player.id, in_list=self.players)
-            if match == False:
-                self.load_player(player)
-            elif not match.id == self.player.id:
-                self.update_player(current=match, received=player)
-
-        # update state from other clients
-        if not self.gamestate.id == self.received_state.id:
-
-            # load the new missiles
-            for m in self.received_state.missile_buffer:
-                self.missiles.append(m)
-
-    # return the list player if given player is in list, players are unique by id
-    def player_in_list(self, check_id=None, in_list=None):
-        if check_id is None or in_list is None:
-            return
-
-        # given player id, return player with matching id
-        for match in in_list:
-            if match.id == check_id:
-                return match
-        return False
-
-    # update player with the received player
-    def update_player(self, current=None, received=None):
-        if current is None or received is None:
-            return
-        current.loc = received.loc
-        current.vel = received.vel
-        current.health = received.health
 
     def tick(self):
-        Thread(target=self.send).start()
-        Thread(target=self.receive).start()
+        Thread(target=self.connection.send).start()
+        Thread(target=self.connection.receive).start()
 
     def update(self):
         # update and draw sprites
-        self.move()
-        self.player.slow()
+        self.player.move(self.game_panel)
+        self.player.slow_down()
 
         # update the player mouse vector
         tail = self.player.loc
@@ -251,22 +115,23 @@ class Actions(object):
         self.pm_vector.set(head, tail)
 
         # set gamestate
-        self.gamestate.set_state(self.players, self.missile_buffer)
+        players = [p.player for p in self.player_infos]
+        self.gamestate.set_state(players, self.missile_buffer)
 
     def draw(self):
+
         self.draw_missiles()
 
-        for player in self.players:
+        for player_info in self.player_infos:
             #self.interface.draw_sprite(player)
-            self.draw_player(player)
+            player_info.draw(self.interface.display)
 
-    def load_player(self, player):
-        self.players.append(player)
-        self.player_images[player.id] = Image(self.player.path)
-        self.player_images[player.id].scale_to(self.interface.tile_width, self.interface.tile_height)
-        self.player_images[player.id].fill(player.color)
-
-    def draw_player(self, player):
-        self.player_images[player.id].loc = player.loc
-        self.player_images[player.id].draw(self.interface.display)
+    # update each missile
+    def draw_missiles(self):
+        for m in self.missiles:
+            m.move(self.game_panel, self.missiles)
+            self.interface.draw_sprite(m)
         
+    # give a player, and a corresponding PlayerInfo is created and added
+    def load_player(self, player):
+        self.player_infos.append(PlayerInfo(player, self.interface))
