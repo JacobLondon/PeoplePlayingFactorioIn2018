@@ -4,7 +4,9 @@ from threading import Thread
 from game.pyngine.constants import Color, Dir, Anchor, Font
 from game.pyngine.controller import Controller
 from game.pyngine.label import Label
+from game.pyngine.button import Button
 from game.pyngine.panel import Panel
+from game.pyngine.listbox import Listbox
 from game.pyngine.layout import Relative, Grid
 
 from game.game_logic.game_objects import Player, Missile
@@ -35,13 +37,23 @@ class GameController(Controller):
         self.center_label.anchor = Anchor.center
 
         # pause layout displays the pause menu based from the background
-        self.pause_layout = Relative(self.background_panel)
-        self.pause_label = Label(self, 'Paused')
-        self.pause_label.loc = self.pause_layout.northeast
-        self.pause_label.anchor = Anchor.northeast
-        self.pause_label.font = Font.large
-        self.pause_label.background = Color.pause
-        self.pause_label.visible = False
+        self.pause_layout = Relative(self.game_panel)
+        self.pause_listbox = Listbox(self)
+        self.pause_listbox.loc = self.pause_layout.northeast
+        self.pause_listbox.anchor = Anchor.northeast
+        self.pause_listbox.font = Font.large
+        self.pause_listbox.background = Color.pause
+        self.pause_listbox.visible = False
+        self.pause_listbox.width = self.game_panel.width / 5
+        self.pause_listbox.height = self.game_panel.height
+
+        # put buttons w/ their actions in the listbox
+        self.menu_button = Button(self, 'Menu')
+        self.menu_button.action = self.stop
+        self.unpause_button = Button(self, 'Close')
+        self.unpause_button.action = self.escape_keydown
+        self.pause_listbox.add(self.menu_button)
+        self.pause_listbox.add(self.unpause_button)
 
     def setup(self):
         self.game_actions = Actions(self)
@@ -52,7 +64,7 @@ class GameController(Controller):
 
     def update_actions(self):
         self.game_actions.update()
-        self.pause_label.visible = self.game_actions.paused
+        self.pause_listbox.visible = self.game_actions.paused
 
     def draw_midground(self):
         self.game_actions.draw()

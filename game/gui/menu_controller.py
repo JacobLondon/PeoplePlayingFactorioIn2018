@@ -19,18 +19,18 @@ class MenuController(Controller):
         self.title_layout = Grid(self.background_panel, 8, 8)
 
         self.start_button = Button(self, 'Multiplayer')
-        self.start_button.loc = self.title_layout.get_pixel(5, 6)
+        self.start_button.loc = self.title_layout.get_pixel(4, 5)
         self.start_button.anchor = Anchor.center
         self.start_button.action = self.start_button_clicked
 
         self.quit_button = Button(self, 'Quit')
-        self.quit_button.loc = self.title_layout.get_pixel(5, 7)
+        self.quit_button.loc = self.title_layout.get_pixel(4, 6)
         self.quit_button.anchor = Anchor.center
         self.quit_button.width = self.start_button.width
         self.quit_button.action = self.quit_button_clicked
 
         self.logo_imagebox = Imagebox(self, 'game/assets/ppfi2018.png')
-        self.logo_imagebox.loc = self.title_layout.get_pixel(5, 4)
+        self.logo_imagebox.loc = self.title_layout.get_pixel(4, 3)
         self.logo_imagebox.anchor = Anchor.center
 
     def open_on_close(self):

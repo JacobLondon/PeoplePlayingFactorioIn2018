@@ -49,13 +49,13 @@ class ConnectController(Controller):
     def initialize_components(self):
         self.connect_layout = Grid(self.background_panel, 16, 16)
         self.connect_label = Label(self, 'Attempting to connect to server...')
-        self.connect_label.loc = self.connect_layout.get_pixel(9, 8)
+        self.connect_label.loc = self.connect_layout.get_pixel(8, 7)
         self.connect_label.anchor = Anchor.center
         self.connect_label.font = Font.large
         self.connect_label.background = None
 
         self.progress_bar = Bar(self)
-        self.progress_bar.loc = self.connect_layout.get_pixel(9, 9)
+        self.progress_bar.loc = self.connect_layout.get_pixel(8, 8)
         self.progress_bar.anchor = Anchor.center
         self.progress_bar.font = Font.large
         self.progress_bar.width = settings.resolution[0] / 2
@@ -64,7 +64,7 @@ class ConnectController(Controller):
         timeout_text = 'Connection timed out.'
         self.timeout_layout = Grid(self.background_panel, 32, 32)
         self.timeout_label = Label(self, timeout_text)
-        self.timeout_label.loc = self.timeout_layout.get_pixel(17, 16)
+        self.timeout_label.loc = self.timeout_layout.get_pixel(16, 15)
         self.timeout_label.font = Font.menu
         self.timeout_label.background = None
         self.timeout_label.anchor = Anchor.center
@@ -72,7 +72,7 @@ class ConnectController(Controller):
 
         return_text = 'Return to menu'
         self.return_button = Button(self, return_text)
-        self.return_button.loc = self.timeout_layout.get_pixel(17, 19)
+        self.return_button.loc = self.timeout_layout.get_pixel(16, 18)
         self.return_button.anchor = Anchor.center
         self.return_button.visible = False
         self.return_button.action = self.return_button_clicked

@@ -23,35 +23,35 @@ class LobbyController(Controller):
         # info about the lobby label
         self.lobby_layout = Grid(self.background_panel, 32, 32)
         self.lobby_label = Label(self, 'Lobby')
-        self.lobby_label.loc = self.lobby_layout.get_pixel(3, 2)
+        self.lobby_label.loc = self.lobby_layout.get_pixel(2, 1)
         self.lobby_label.font = Font.menu
         self.lobby_label.background = None
 
         # button to connect/join a lobby
         self.join_button = Button(self, 'Join')
-        self.join_button.loc = self.lobby_layout.get_pixel(32, 30)
+        self.join_button.loc = self.lobby_layout.get_pixel(31, 29)
         self.join_button.anchor = Anchor.northeast
         self.join_button.action = self.join_button_clicked
 
         # button to go back to the main menu
         self.back_button = Button(self, 'Back')
-        self.back_button.loc = self.lobby_layout.get_pixel(2, 30)
+        self.back_button.loc = self.lobby_layout.get_pixel(2, 29)
         self.back_button.action = self.back_button_clicked
 
         # textbox to enter the ip address to connect to
         self.ip_textbox = Textbox(self)
-        self.ip_textbox.loc = self.lobby_layout.get_pixel(3, 5)
+        self.ip_textbox.loc = self.lobby_layout.get_pixel(2, 4)
         self.ip_textbox.anchor = Anchor.northwest
         self.ip_textbox.text = settings.client_ip
 
         # button to connect to a server
         self.connect_button = Button(self, 'Connect')
-        self.connect_button.loc = self.lobby_layout.get_pixel(3, 7)
+        self.connect_button.loc = self.lobby_layout.get_pixel(2, 6)
         self.connect_button.width = self.ip_textbox.width
 
         # get most recent lobby data from server
         self.refresh_button = Button(self, 'Refresh')
-        self.refresh_button.loc = self.lobby_layout.get_pixel(3, 10)
+        self.refresh_button.loc = self.lobby_layout.get_pixel(2, 10)
         self.refresh_button.width = self.ip_textbox.width
 
     def open_on_close(self):
