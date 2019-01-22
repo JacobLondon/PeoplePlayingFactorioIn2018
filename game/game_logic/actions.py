@@ -81,7 +81,7 @@ class Actions(object):
             return
 
          # make a missile and put it in the missile list
-        angle = (self.pm_vector.unit[0], self.pm_vector.unit[1])
+        angle = (self.pm_vector.unit[0] + self.player.vel[0], self.pm_vector.unit[1] + self.player.vel[1])
         missile = Missile(angle=angle)
 
         # spawn the missile away from the player

@@ -1,7 +1,7 @@
 import pygame, time, copy, numpy as np
 from threading import Thread
 
-from game.pyngine.constants import Color, Dir, Anchor, Font
+from game.pyngine.constants import Color, Dir, Anchor, Font, Mouse
 from game.pyngine.controller import Controller
 from game.pyngine.label import Label
 from game.pyngine.button import Button
@@ -38,6 +38,14 @@ class GameController(Controller):
 
         # pause layout displays the pause menu based from the background
         self.pause_layout = Relative(self.game_panel)
+        self.pause_panel = Panel(self)
+        self.pause_panel.visible = False
+        self.pause_panel.loc = self.pause_layout.northeast
+        self.pause_panel.anchor = Anchor.northeast
+        self.pause_panel.width = self.game_panel.width / 5
+        self.pause_panel.height = self.game_panel.height
+        self.pause_panel.background = Color.pause
+
         self.pause_listbox = Listbox(self)
         self.pause_listbox.loc = self.pause_layout.northeast
         self.pause_listbox.anchor = Anchor.northeast
@@ -59,12 +67,16 @@ class GameController(Controller):
         self.game_actions = Actions(self)
         self.game_actions.setup()
 
+        for i in self.foreground_components:
+            print(i.loc, i.text)
+
     def tick_actions(self):
         self.game_actions.tick()
 
     def update_actions(self):
         self.game_actions.update()
         self.pause_listbox.visible = self.game_actions.paused
+        self.pause_panel.visible = self.game_actions.paused
 
     def draw_midground(self):
         self.game_actions.draw()
