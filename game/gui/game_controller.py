@@ -60,15 +60,45 @@ class GameController(Controller):
         self.menu_button.action = self.stop
         self.unpause_button = Button(self, 'Close')
         self.unpause_button.action = self.escape_keydown
+
+        self.test1_button = Button(self, 'test 1')
+        self.test1_button.action = self.test1
+        self.test2_button = Button(self, 'test 2')
+        self.test2_button.action = self.test2
+        self.test3_button = Button(self, 'test 3')
+        self.test3_button.action = self.test3
+        self.test4_button = Button(self, 'test 4')
+        self.test4_button.action = self.test4
+        self.test5_button = Button(self, 'test 5')
+        self.test5_button.action = self.test5
+
         self.pause_listbox.add(self.menu_button)
         self.pause_listbox.add(self.unpause_button)
+
+        self.pause_listbox.add(self.test1_button)
+        self.pause_listbox.add(self.test2_button)
+        self.pause_listbox.add(self.test3_button)
+        self.pause_listbox.add(self.test4_button)
+        self.pause_listbox.add(self.test5_button)
+
+    def test1(self):
+        print('test1')
+
+    def test2(self):
+        print('test2')
+
+    def test3(self):
+        print('test3')
+
+    def test4(self):
+        print('test4')
+
+    def test5(self):
+        print('test5')
 
     def setup(self):
         self.game_actions = Actions(self)
         self.game_actions.setup()
-
-        for i in self.foreground_components:
-            print(i.loc, i.text)
 
     def tick_actions(self):
         self.game_actions.tick()

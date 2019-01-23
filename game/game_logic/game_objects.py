@@ -109,8 +109,13 @@ class Missile(GameObject):
 
 class MissileInfo(object):
 
-    def __init__(self, missile, angle):
+    def __init__(self, missile, interface):
         self.missile = missile
         self.image = Image(self.missile.path)
-        self.image.rotate_by(angle)
+        self.image.scale_to(interface.tile_width, interface.tile_height)
+        self.image.fill(Color.missile)
         self.image.loc = self.missile.loc
+
+    def draw(self, display):
+        self.image.loc = self.missile.loc
+        self.image.draw(display)

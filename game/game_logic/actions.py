@@ -30,7 +30,7 @@ class Actions(object):
         self.load_player(self.player)
 
         # hold the missiles until tick, then empty the buffer
-        self.missiles = []
+        self.missile_infos = []
         self.missile_buffer = []
 
         # vector from player to mouse
@@ -85,17 +85,17 @@ class Actions(object):
         missile = Missile(angle=angle)
 
         # spawn the missile away from the player
-        startx = self.player.loc[0] + self.interface.tile_width*angle[0]
-        starty = self.player.loc[1] + self.interface.tile_height*angle[1]
+        startx = self.player.loc[0] + self.interface.tile_width * angle[0]
+        starty = self.player.loc[1] + self.interface.tile_height * angle[1]
         missile.loc = (startx, starty)
-            
-        self.missiles.append(missile)
+
+        missile_info = MissileInfo(missile, self.interface)
+        self.missile_infos.append(missile_info)
         self.missile_buffer.append(copy.deepcopy(missile))
 
         # cannot fire again until the cooldown timer is done
         self.fire_ready = False
         Thread(target=self.shoot_cooldown).start()        
-
 
     def tick(self):
         Thread(target=self.connection.send).start()
@@ -128,9 +128,11 @@ class Actions(object):
 
     # update each missile
     def draw_missiles(self):
-        for m in self.missiles:
-            m.move(self.game_panel, self.missiles)
-            self.interface.draw_sprite(m)
+        missiles = [m.missile for m in self.missile_infos]
+        for missile_info in self.missile_infos:
+            missile_info.missile.move(self.game_panel, missiles)
+            #self.interface.draw_sprite(m)
+            missile_info.draw(self.interface.display)
         
     # give a player, and a corresponding PlayerInfo is created and added
     def load_player(self, player):

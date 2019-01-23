@@ -1,6 +1,7 @@
 import re
 
 from game.utils.config import settings
+from game.game_logic.game_objects import MissileInfo
 
 from game.game_logic.gamestate import json_to_obj
 
@@ -80,8 +81,8 @@ class GameConnection(object):
         if not self.actions.gamestate.id == self.received_state.id:
 
             # load the new missiles
-            for m in self.received_state.missile_buffer:
-                self.actions.missiles.append(m)
+            for missile in self.received_state.missile_buffer:
+                self.actions.missile_infos.append(MissileInfo(missile, self.controller.interface))
 
     # return the list player if given player is in list, players are unique by id
     def player_in_list(self, check_id=None, in_list=None):
