@@ -134,13 +134,10 @@ class GameController(Controller):
 
     def w_keydown(self):
         self.game_actions.add_vel(Dir.up)
-
     def a_keydown(self):
         self.game_actions.add_vel(Dir.left)
-
     def s_keydown(self):
         self.game_actions.add_vel(Dir.down)
-
     def d_keydown(self):
         self.game_actions.add_vel(Dir.right)
 

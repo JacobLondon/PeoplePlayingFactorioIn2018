@@ -38,7 +38,7 @@ class Player(GameObject):
         self.health = health
         if self.color is None:
             self.color = (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
-        self.path = 'game/assets/player.png'
+        self.path = 'game/assets/player_up.png'
 
     # reduce the velocity by the friction amount
     def slow_down(self):
@@ -52,26 +52,34 @@ class Player(GameObject):
         # LRUD movement
         if direction == Dir.left:
             self.vel[0] = self.vel[0] - settings.player_vel
+            self.path = 'game/assets/player_left.png'
         elif direction == Dir.right:
             self.vel[0] = self.vel[0] + settings.player_vel
+            self.path = 'game/assets/player_right.png'
         elif direction == Dir.up:
             self.vel[1] = self.vel[1] - settings.player_vel
+            self.path = 'game/assets/player_up.png'
         elif direction == Dir.down:
             self.vel[1] = self.vel[1] + settings.player_vel
+            self.path = 'game/assets/player_down.png'
 
         # diagnal movement
         elif direction == Dir.up_right:
             self.vel[0] = self.vel[0] + settings.player_vel
             self.vel[1] = self.vel[1] - settings.player_vel
+            self.path = 'game/assets/player_up_right.png'
         elif direction == Dir.down_right:
             self.vel[0] = self.vel[0] + settings.player_vel
             self.vel[1] = self.vel[1] + settings.player_vel
+            self.path = 'game/assets/player_down_right.png'
         elif direction == Dir.down_left:
             self.vel[0] = self.vel[0] - settings.player_vel
             self.vel[1] = self.vel[1] + settings.player_vel
+            self.path = 'game/assets/player_down_left.png'
         elif direction == Dir.up_left:
             self.vel[0] = self.vel[0] - settings.player_vel
             self.vel[1] = self.vel[1] - settings.player_vel
+            self.path = 'game/assets/player_up_left.png'
 
     # move player with a bounds check
     def move(self, panel):
