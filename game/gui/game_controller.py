@@ -8,6 +8,7 @@ from game.pyngine.button import Button
 from game.pyngine.panel import Panel
 from game.pyngine.listbox import Listbox
 from game.pyngine.layout import Relative, Grid
+from game.pyngine.image import Image
 
 from game.game_logic.game_objects import Player, Missile
 from game.game_logic.client import Client
@@ -29,12 +30,14 @@ class GameController(Controller):
         self.game_panel = Panel(self, in_foreground=False)
         self.game_panel.width = settings.resolution[0]
         self.game_panel.height = settings.resolution[1]
+        self.game_panel.visible = False
 
         # center label shows info in the center of the game panel
         self.relative_layout = Relative(self.game_panel)
         self.center_label = Label(self, 'Press esc to pause', in_foreground=False)
         self.center_label.loc = self.relative_layout.center
         self.center_label.anchor = Anchor.center
+        self.center_label.background = None
 
         # pause layout displays the pause menu based from the background
         self.pause_layout = Relative(self.game_panel)
@@ -100,6 +103,9 @@ class GameController(Controller):
         self.game_actions = Actions(self)
         self.game_actions.setup()
 
+        self.background_image = Image('game/assets/background.png')
+        self.background_image.scale_to(self.game_panel.width, self.game_panel.height)
+
     def tick_actions(self):
         self.game_actions.tick()
 
@@ -107,6 +113,9 @@ class GameController(Controller):
         self.game_actions.update()
         self.pause_listbox.visible = self.game_actions.paused
         self.pause_panel.visible = self.game_actions.paused
+
+    def draw_background(self):
+        self.background_image.draw(self.interface.display)
 
     def draw_midground(self):
         self.game_actions.draw()
